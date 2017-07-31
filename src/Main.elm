@@ -1,19 +1,20 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, img, text)
-import Html.Attributes exposing (src)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 
 
 ---- MODEL ----
 
 
 type alias Model =
-    {}
+    { url : String }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( {}, Cmd.none )
+    ( { url = "" }, Cmd.none )
 
 
 
@@ -36,7 +37,10 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ div [] [ text "Your Elm App is working!!!!" ]
+        [ Html.form []
+            [ input [ type_ "text", placeholder "Enter url here" ] []
+            , button [] [ text "Submit" ]
+            ]
         ]
 
 
