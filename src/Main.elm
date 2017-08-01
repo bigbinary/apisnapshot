@@ -22,12 +22,18 @@ init =
 
 
 type Msg
-    = NoOp
+    = Submit
+    | ChangeUrl String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        ChangeUrl newUrl ->
+            ( { model | url = newUrl }, Cmd.none )
+
+        Submit ->
+            ( model, Cmd.none )
 
 
 
@@ -37,9 +43,9 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ Html.form []
-            [ input [ type_ "text", placeholder "Enter url here" ] []
-            , button [] [ text "Submit" ]
+        [ Html.form [ onSubmit Submit, action "javascript:void(0)" ]
+            [ input [ name "url", type_ "text", placeholder "Enter url here", onInput ChangeUrl, value model.url ] []
+            , button [ type_ "Submit" ] [ text "Submit" ]
             ]
         ]
 
