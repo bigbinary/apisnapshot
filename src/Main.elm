@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -13,11 +14,21 @@ type alias BBJson =
     { name : String }
 
 
+type alias DecodedResponse =
+    { contents : Maybe BBJson
+    , status :
+        { code : Int
+        , message : String
+        }
+    , headers : Dict.Dict String String
+    }
+
+
 type alias Response =
     { url : String
     , error : String
-    , raw : String
-    , json : Maybe BBJson
+    , rawResponse : String
+    , response : Maybe DecodedResponse
     }
 
 
@@ -68,32 +79,48 @@ showResponse resp =
         |> Result.fromMaybe "unknown"
 
 
+changeUrl : Model -> String -> Model
+changeUrl model newUrl =
+    { model | url = newUrl }
+
+
+decodeRawResponse : String -> DecodedResponse
+decodeRawResponse raw =
+    { headers = Dict.empty
+    , contents = Nothing
+    , status =
+        { code = 0
+        , message = ""
+        }
+    }
+
+
+updateResponse : Model -> String -> Model
+updateResponse model value =
+    { model | response = Just { rawResponse = value, url = model.url, error = "", response = Just (decodeRawResponse value) } }
+
+
+updateErrorResponse : Model -> String -> Model
+updateErrorResponse model error =
+    { model | response = Just { rawResponse = "", url = model.url, error = toString error, response = Nothing } }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ChangeUrl newUrl ->
-            let
-                newModel =
-                    { model | url = newUrl }
-            in
-            ( newModel, Cmd.none )
+            ( changeUrl model newUrl
+            , Cmd.none
+            )
 
         Submit ->
             ( model, hitUrl model.url )
 
         UrlMsg (Ok value) ->
-            let
-                newModel =
-                    { model | response = Just { raw = value, url = model.url, error = "", json = Nothing } }
-            in
-            ( newModel, Cmd.none )
+            ( updateResponse model value, Cmd.none )
 
         UrlMsg (Err error) ->
-            let
-                newModel =
-                    { model | response = Just { raw = "", url = model.url, error = toString error, json = Nothing } }
-            in
-            ( newModel, Cmd.none )
+            ( updateErrorResponse model (toString error), Cmd.none )
 
 
 
@@ -114,7 +141,7 @@ view model =
                         , pre []
                             [ code []
                                 [ text
-                                    response.raw
+                                    response.rawResponse
                                 ]
                             , h4 [] [ text response.error ]
                             ]
