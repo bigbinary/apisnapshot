@@ -5,6 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
+import Json.Decode as JD
 
 
 ---- MODEL ----
@@ -14,31 +15,19 @@ type alias BBJson =
     { name : String }
 
 
-type alias DecodedResponse =
-    { contents : Maybe BBJson
-    , status :
-        { code : Int
-        , message : String
-        }
-    , headers : Dict.Dict String String
-    }
-
-
 type alias Response =
-    { url : String
-    , error : String
-    , rawResponse : String
-    , response : Maybe DecodedResponse
+    { original : Http.Response String
+    , json : BBJson
     }
 
 
 type alias Model =
-    { url : String, response : Maybe Response }
+    { url : String, response : Maybe Response, error : Maybe String }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { url = "https://swapi.co/api/people/1/", response = Nothing }, Cmd.none )
+    ( { url = "https://swapi.co/api/people/1/", response = Nothing, error = Nothing }, Cmd.none )
 
 
 
@@ -48,35 +37,34 @@ init =
 type Msg
     = Submit
     | ChangeUrl String
-    | UrlMsg (Result Http.Error String)
+    | ResponseAvailable (Result Http.Error (Http.Response String))
 
 
 hitUrl : String -> Cmd Msg
 hitUrl url =
     let
         cmd =
-            Http.send UrlMsg (buildRequest url)
+            Http.send ResponseAvailable (buildRequest url)
     in
     cmd
 
 
-buildRequest : String -> Http.Request String
+buildRequest : String -> Http.Request (Http.Response String)
 buildRequest url =
     Http.request
         { method = "GET"
         , headers = []
         , url = url
         , body = Http.emptyBody
-        , expect = Http.expectStringResponse showResponse
+        , expect = Http.expectStringResponse parseResponse
         , timeout = Nothing
         , withCredentials = False
         }
 
 
-showResponse : Http.Response String -> Result String String
-showResponse resp =
-    Just (toString resp)
-        |> Result.fromMaybe "unknown"
+parseResponse : Http.Response String -> Result String (Http.Response String)
+parseResponse resp =
+    Ok resp
 
 
 changeUrl : Model -> String -> Model
@@ -84,25 +72,14 @@ changeUrl model newUrl =
     { model | url = newUrl }
 
 
-decodeRawResponse : String -> DecodedResponse
-decodeRawResponse raw =
-    { headers = Dict.empty
-    , contents = Nothing
-    , status =
-        { code = 0
-        , message = ""
-        }
-    }
-
-
-updateResponse : Model -> String -> Model
-updateResponse model value =
-    { model | response = Just { rawResponse = value, url = model.url, error = "", response = Just (decodeRawResponse value) } }
+updateResponse : Model -> Http.Response String -> Model
+updateResponse model httpResponse =
+    { model | error = Nothing, response = Just { original = httpResponse, json = { name = "Parsed" } } }
 
 
 updateErrorResponse : Model -> String -> Model
 updateErrorResponse model error =
-    { model | response = Just { rawResponse = "", url = model.url, error = toString error, response = Nothing } }
+    { model | error = Just (toString error), response = Nothing }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -116,15 +93,38 @@ update msg model =
         Submit ->
             ( model, hitUrl model.url )
 
-        UrlMsg (Ok value) ->
+        ResponseAvailable (Ok value) ->
             ( updateResponse model value, Cmd.none )
 
-        UrlMsg (Err error) ->
+        ResponseAvailable (Err error) ->
             ( updateErrorResponse model (toString error), Cmd.none )
 
 
 
 ---- VIEW ----
+
+
+emptyResponseMarkup : Model -> Html msg
+emptyResponseMarkup model =
+    div []
+        [ pre [] [ text "<>" ]
+        , case model.error of
+            Just message ->
+                h4 [] [ text message ]
+
+            Nothing ->
+                text ""
+        ]
+
+
+successfulResponseMarkup : Response -> Html msg
+successfulResponseMarkup response =
+    div []
+        [ p [ class "Result__urlDisplay" ] [ text (toString response.original.url) ]
+        , pre [] [ code [] [ text response.original.body ] ]
+        , p [] [ text ("Status code: " ++ toString response.original.status.code) ]
+        , p [] [ text ("Status message: " ++ toString response.original.status.message) ]
+        ]
 
 
 view : Model -> Html Msg
@@ -133,19 +133,10 @@ view model =
         responseMarkup =
             case model.response of
                 Nothing ->
-                    pre [] [ text "<>" ]
+                    emptyResponseMarkup model
 
                 Just response ->
-                    div []
-                        [ p [ class "Result__urlDisplay" ] [ text response.url ]
-                        , pre []
-                            [ code []
-                                [ text
-                                    response.rawResponse
-                                ]
-                            , h4 [] [ text response.error ]
-                            ]
-                        ]
+                    successfulResponseMarkup response
     in
     div []
         [ Html.form [ class "UrlForm", onSubmit Submit, action "javascript:void(0)" ]
