@@ -14,7 +14,8 @@ type alias BBJson =
 
 
 type alias Response =
-    { error : String
+    { url : String
+    , error : String
     , raw : String
     , json : Maybe BBJson
     }
@@ -83,14 +84,14 @@ update msg model =
         UrlMsg (Ok value) ->
             let
                 newModel =
-                    { model | response = Just { raw = value, error = "", json = Nothing } }
+                    { model | response = Just { raw = value, url = model.url, error = "", json = Nothing } }
             in
             ( newModel, Cmd.none )
 
         UrlMsg (Err error) ->
             let
                 newModel =
-                    { model | response = Just { raw = "", error = toString error, json = Nothing } }
+                    { model | response = Just { raw = "", url = model.url, error = toString error, json = Nothing } }
             in
             ( newModel, Cmd.none )
 
@@ -108,12 +109,15 @@ view model =
                     pre [] [ text "<>" ]
 
                 Just response ->
-                    pre []
-                        [ code []
-                            [ text
-                                response.raw
+                    div []
+                        [ p [ class "Result__urlDisplay" ] [ text response.url ]
+                        , pre []
+                            [ code []
+                                [ text
+                                    response.raw
+                                ]
+                            , h4 [] [ text response.error ]
                             ]
-                        , h4 [] [ text response.error ]
                         ]
     in
     div []
@@ -121,10 +125,7 @@ view model =
             [ input [ class "UrlForm__input", name "url", type_ "text", placeholder "Enter url here", onInput ChangeUrl, value model.url ] []
             , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
             ]
-        , div [ class "Result" ]
-            [ p [ class "Result__urlDisplay" ] [ text model.url ]
-            , responseMarkup
-            ]
+        , div [ class "Result" ] [ responseMarkup ]
         ]
 
 
