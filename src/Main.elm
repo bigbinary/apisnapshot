@@ -4,48 +4,29 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Decode as JD
-import Json.Decode.Pipeline as JP
 
 
 ---- MODEL ----
 
 
+type alias BBJson =
+    { name : String }
+
+
+type alias Response =
+    { error : String
+    , raw : String
+    , json : Maybe BBJson
+    }
+
+
 type alias Model =
-    { url : String, error : String, responseData : String }
+    { url : String, response : Maybe Response }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { url = "", error = "", responseData = "" }, Cmd.none )
-
-
-type alias Response =
-    { status : Int
-    }
-
-
-responseDecoder : JD.Decoder Response
-responseDecoder =
-    JP.decode Response
-        |> JP.required "status" JD.int
-
-
-decodedValue : String -> String
-decodedValue json =
-    let
-        result =
-            JD.decodeString (JD.at [ "status" ] responseDecoder) json
-    in
-    case result of
-        Ok value ->
-            Debug.log "success"
-                toString
-                value
-
-        Err error ->
-            Debug.log "error"
-                error
+    ( { url = "https://swapi.co/api/people/1/", response = Nothing }, Cmd.none )
 
 
 
@@ -92,7 +73,7 @@ update msg model =
         ChangeUrl newUrl ->
             let
                 newModel =
-                    { model | url = newUrl, error = "", responseData = "" }
+                    { model | url = newUrl }
             in
             ( newModel, Cmd.none )
 
@@ -101,18 +82,15 @@ update msg model =
 
         UrlMsg (Ok value) ->
             let
-                _ =
-                    decodedValue value
-
                 newModel =
-                    { model | responseData = value }
+                    { model | response = Just { raw = value, error = "", json = Nothing } }
             in
             ( newModel, Cmd.none )
 
         UrlMsg (Err error) ->
             let
                 newModel =
-                    { model | error = toString error }
+                    { model | response = Just { raw = "", error = toString error, json = Nothing } }
             in
             ( newModel, Cmd.none )
 
@@ -123,14 +101,30 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    let
+        responseMarkup =
+            case model.response of
+                Nothing ->
+                    pre [] [ text "<>" ]
+
+                Just response ->
+                    pre []
+                        [ code []
+                            [ text
+                                response.raw
+                            ]
+                        , h4 [] [ text response.error ]
+                        ]
+    in
     div []
-        [ Html.form [ onSubmit Submit, action "javascript:void(0)" ]
-            [ input [ name "url", type_ "text", placeholder "Enter url here", onInput ChangeUrl, value model.url ] []
-            , button [ type_ "Submit" ] [ text "Submit" ]
+        [ Html.form [ class "UrlForm", onSubmit Submit, action "javascript:void(0)" ]
+            [ input [ class "UrlForm__input", name "url", type_ "text", placeholder "Enter url here", onInput ChangeUrl, value model.url ] []
+            , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
             ]
-        , h2 [] [ text model.url ]
-        , h2 [] [ text model.responseData ]
-        , h4 [] [ text model.error ]
+        , div [ class "Result" ]
+            [ p [ class "Result__urlDisplay" ] [ text model.url ]
+            , responseMarkup
+            ]
         ]
 
 

@@ -1,12 +1,28 @@
 body {
-  font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
-  font-size: 30px;
-  margin: 0;
-  text-align: center;
-  color: #293c4b;
+    font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    margin: 0;
+    text-align: left;
+    color: #293c4b;
 }
 
 img {
-  margin: 20px 0;
-  max-width: 200px;
+    margin: 20px 0;
+    max-width: 200px;
 }
+
+.UrlForm {
+    margin: 3em;
+    font-size: 20px;
+}
+.UrlForm__input {
+  width: 60%;
+  margin-right: 3em;
+}
+
+.Result {
+  padding: 2em;
+  margin: 2em;
+}
+
+.Result__urlDisplay {}
