@@ -1,4 +1,17 @@
-module JsonViewer exposing (Collapsed, JsonView, fromJSVal, toHtml)
+module JsonViewer exposing (Collapsed, JsonView, fromJSVal, view)
+
+{-| JsonViewer transforms a `JSVal` (JSON data) into a renderable structure, and
+provides a view that can collapse and expand nested values.
+
+
+# Usage
+
+    let
+        jsonView = (JsonViewer.fromJSVal (JSVal.String "Hello")
+    in
+        div [][JsonViewer.view jsonView)]
+
+-}
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -6,6 +19,9 @@ import Html.Events exposing (..)
 import JSVal
 import Msg
 import Set
+
+
+-- Indentation in pixels when a rendering a nested structure
 
 
 indent =
@@ -20,24 +36,41 @@ arrowDown =
     "▼ "
 
 
+{-| Set of all collapsed nodes
+-}
 type alias Collapsed =
     Set.Set String
 
 
+{-| The key to render for each collection item.
+Objects have their own keys; arrays use their index.
+-}
 type alias ElementKey =
     String
 
 
+{-| Unique string ID for every element in the JSON.
+
+This is required so that we can record whether a specific node
+is expanded or collapsed in the Collapsed set, and seek it out
+when rendering the node.
+
+This key is guaranteed to be unique as it encodes the entire path
+from the root to itself. For example `root-2-name` points to the value whose
+key is `name`, of the object that is the second element in the root array.
+
+-}
 type alias UniqueId =
     String
 
 
 type alias JVCollectionElement =
+    -- A collection element could belong to either an Object or an Array.
+    -- For objects, their `ElementKey` is the key itself, and for arrays it is the element index.
     ( UniqueId, ElementKey, JsonView )
 
 
 type alias JVCollection =
-    -- This type can hold both objects and arrays. The `elementKey` of arrays are their positional indices.
     List JVCollectionElement
 
 
@@ -55,7 +88,7 @@ type JsonView
 ---- Construct a JsonView from plain JSVal ----
 
 
-mapArrayElements : List JSVal.JSVal -> String -> List ( UniqueId, ElementKey, JsonView )
+mapArrayElements : List JSVal.JSVal -> String -> List JVCollectionElement
 mapArrayElements jsValsList parentId =
     List.indexedMap
         (\id jsValElement ->
@@ -68,7 +101,7 @@ mapArrayElements jsValsList parentId =
         jsValsList
 
 
-mapObjectElements : List ( ElementKey, JSVal.JSVal ) -> String -> List ( UniqueId, ElementKey, JsonView )
+mapObjectElements : List ( ElementKey, JSVal.JSVal ) -> String -> List JVCollectionElement
 mapObjectElements jsValsList parentId =
     List.map
         (\( key, jsVal ) ->
@@ -115,6 +148,18 @@ fromJSVal jsVal =
 ---- VIEW ----
 
 
+{-| Render the first line of a collection.
+
+It looks like so:
+
+    ▶ Object (3)
+    ▼ Array (4)
+
+Clicking on the arrow expands/collapses the collection.
+
+Does not render anything for non-collections.
+
+-}
 firstSummaryLine jsonVal uniqueId collapsed =
     let
         isCollapsed =
@@ -143,19 +188,19 @@ firstSummaryLine jsonVal uniqueId collapsed =
             Html.text ""
 
 
-jsonViewCollectionElementToHtml : Int -> Collapsed -> JVCollectionElement -> Html Msg.Msg
-jsonViewCollectionElementToHtml depth collapsed ( uniqueId, elementKey, jsonVal ) =
+collectionItemView : Int -> Collapsed -> JVCollectionElement -> Html Msg.Msg
+collectionItemView depth collapsed ( uniqueId, elementKey, jsonVal ) =
     li [ class "JsonView__collectionItem" ]
         [ span
             [ class "JsonView__propertyKey" ]
             [ text (elementKey ++ ":") ]
         , firstSummaryLine jsonVal uniqueId collapsed
-        , toHtml jsonVal uniqueId depth collapsed
+        , view jsonVal uniqueId depth collapsed
         ]
 
 
-jsonViewCollectionToHtml : JVCollection -> String -> UniqueId -> Int -> Collapsed -> Html Msg.Msg
-jsonViewCollectionToHtml collection caption uniqueId depth collapsed =
+collectionView : JVCollection -> String -> UniqueId -> Int -> Collapsed -> Html Msg.Msg
+collectionView collection caption uniqueId depth collapsed =
     let
         isCollapsed =
             Set.member uniqueId collapsed
@@ -165,13 +210,13 @@ jsonViewCollectionToHtml collection caption uniqueId depth collapsed =
     else
         ol [ class "JsonView__collectionItemsList", style [ ( "paddingLeft", toString ((depth + 1) * indent) ++ "px" ) ] ]
             (List.map
-                (jsonViewCollectionElementToHtml (depth + 1) collapsed)
+                (collectionItemView (depth + 1) collapsed)
                 collection
             )
 
 
-toHtml : JsonView -> String -> Int -> Collapsed -> Html Msg.Msg
-toHtml jsonVal id depth collapsed =
+view : JsonView -> String -> Int -> Collapsed -> Html Msg.Msg
+view jsonVal id depth collapsed =
     case jsonVal of
         JVString string ->
             span [ class "JsonView__string" ] [ text string ]
@@ -191,7 +236,7 @@ toHtml jsonVal id depth collapsed =
         JVArray array ->
             let
                 rendered =
-                    jsonViewCollectionToHtml array "Array" id depth collapsed
+                    collectionView array "Array" id depth collapsed
             in
             if depth == 0 then
                 li [ class "JsonView__collectionItem" ] [ firstSummaryLine jsonVal id collapsed, rendered ]
@@ -201,7 +246,7 @@ toHtml jsonVal id depth collapsed =
         JVObject object ->
             let
                 rendered =
-                    jsonViewCollectionToHtml object "Object" id depth collapsed
+                    collectionView object "Object" id depth collapsed
             in
             if depth == 0 then
                 li [ class "JsonView__collectionItem" ] [ firstSummaryLine jsonVal id collapsed, rendered ]

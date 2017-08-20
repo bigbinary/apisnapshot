@@ -211,7 +211,7 @@ view model =
 
                 Just response ->
                     [ httpStatusMarkup response.original
-                    , div [ class "Result__jsonView" ] [ JsonViewer.toHtml response.json "root" 0 response.collapsed ]
+                    , div [ class "Result__jsonView" ] [ JsonViewer.view response.json "root" 0 response.collapsed ]
                     , httpRawResponseMarkup response.original
                     ]
     in
