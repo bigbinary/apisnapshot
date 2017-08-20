@@ -84,6 +84,14 @@ type JsonView
     | JVObject JVCollection
 
 
+type alias Node =
+    { depth : Int
+    , collapsedNodes : CollapsedNodes
+    , uniqueId : UniqueId
+    , jsonVal : JsonView
+    }
+
+
 
 ---- Construct a JsonView from plain JSVal ----
 
@@ -160,8 +168,11 @@ Clicking on the arrow expands/collapses the collection.
 Does not render anything for non-collections.
 
 -}
-firstSummaryLine jsonVal uniqueId collapsedNodes =
+firstSummaryLine node =
     let
+        { jsonVal, collapsedNodes, uniqueId } =
+            node
+
         isCollapsed =
             Set.member uniqueId collapsedNodes
 
@@ -188,20 +199,27 @@ firstSummaryLine jsonVal uniqueId collapsedNodes =
             Html.text ""
 
 
-collectionItemView : Int -> CollapsedNodes -> JVCollectionElement -> Html Msg.Msg
-collectionItemView depth collapsedNodes ( uniqueId, elementKey, jsonVal ) =
+collectionItemView : Node -> JVCollectionElement -> Html Msg.Msg
+collectionItemView parentNode ( uniqueId, elementKey, jsonVal ) =
+    let
+        node =
+            { parentNode | jsonVal = jsonVal, uniqueId = uniqueId }
+    in
     li [ class "JsonView__collectionItem" ]
         [ span
             [ class "JsonView__propertyKey" ]
             [ text (elementKey ++ ":") ]
-        , firstSummaryLine jsonVal uniqueId collapsedNodes
-        , view jsonVal uniqueId depth collapsedNodes
+        , firstSummaryLine node
+        , view node
         ]
 
 
-collectionView : JVCollection -> String -> UniqueId -> Int -> CollapsedNodes -> Html Msg.Msg
-collectionView collection caption uniqueId depth collapsedNodes =
+collectionView : Node -> JVCollection -> String -> Html Msg.Msg
+collectionView parentNode collection caption =
     let
+        { collapsedNodes, depth, uniqueId } =
+            parentNode
+
         isCollapsed =
             Set.member uniqueId collapsedNodes
     in
@@ -213,14 +231,14 @@ collectionView collection caption uniqueId depth collapsedNodes =
             , style [ ( "paddingLeft", toString ((depth + 1) * indent) ++ "px" ) ]
             ]
             (List.map
-                (collectionItemView (depth + 1) collapsedNodes)
+                (collectionItemView { parentNode | depth = depth + 1 })
                 collection
             )
 
 
-view : JsonView -> String -> Int -> CollapsedNodes -> Html Msg.Msg
-view jsonVal id depth collapsedNodes =
-    case jsonVal of
+view : Node -> Html Msg.Msg
+view node =
+    case node.jsonVal of
         JVString string ->
             span [ class "JsonView__string" ] [ text string ]
 
@@ -239,19 +257,25 @@ view jsonVal id depth collapsedNodes =
         JVArray array ->
             let
                 rendered =
-                    collectionView array "Array" id depth collapsedNodes
+                    collectionView node array "Array"
             in
-            if depth == 0 then
-                li [ class "JsonView__collectionItem" ] [ firstSummaryLine jsonVal id collapsedNodes, rendered ]
+            if node.depth == 0 then
+                li [ class "JsonView__collectionItem" ]
+                    [ firstSummaryLine node
+                    , rendered
+                    ]
             else
                 rendered
 
         JVObject object ->
             let
                 rendered =
-                    collectionView object "Object" id depth collapsedNodes
+                    collectionView node object "Object"
             in
-            if depth == 0 then
-                li [ class "JsonView__collectionItem" ] [ firstSummaryLine jsonVal id collapsedNodes, rendered ]
+            if node.depth == 0 then
+                li [ class "JsonView__collectionItem" ]
+                    [ firstSummaryLine node
+                    , rendered
+                    ]
             else
                 rendered

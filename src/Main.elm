@@ -206,8 +206,16 @@ view model =
                     [ emptyResponseMarkup model ]
 
                 Just response ->
+                    let
+                        rootNode =
+                            { jsonVal = response.json
+                            , uniqueId = "root"
+                            , depth = 0
+                            , collapsedNodes = response.collapsedNodes
+                            }
+                    in
                     [ httpStatusMarkup response.original
-                    , div [ class "Result__jsonView" ] [ JsonViewer.view response.json "root" 0 response.collapsedNodes ]
+                    , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
                     , httpRawResponseMarkup response.original
                     ]
     in
