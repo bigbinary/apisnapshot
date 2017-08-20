@@ -29,6 +29,54 @@ type JsonView
     | JVObject JVCollection
 
 
+isJsonElement : JsonView -> Bool
+isJsonElement jsonVal =
+    case jsonVal of
+        JVString _ ->
+            True
+
+        JVFloat _ ->
+            True
+
+        JVInt _ ->
+            True
+
+        JVNull ->
+            True
+
+        JVBool _ ->
+            True
+
+        _ ->
+            False
+
+
+isJsonCollection : JsonView -> Bool
+isJsonCollection jsonVal =
+    case jsonVal of
+        JVArray _ ->
+            True
+
+        JVObject _ ->
+            True
+
+        _ ->
+            False
+
+
+getCollection : JsonView -> JVCollection
+getCollection jsonVal =
+    case jsonVal of
+        JVArray collection ->
+            collection
+
+        JVObject collection ->
+            collection
+
+        _ ->
+            []
+
+
 
 ---- Construct a JsonViewer from plain JSVal ----
 

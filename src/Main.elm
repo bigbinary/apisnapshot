@@ -214,40 +214,47 @@ emptyResponseMarkup model =
 jsonViewCollectionToHtml : JsonViewer.JVCollection -> String -> JsonViewer.UniqueId -> Int -> Collapsed -> Html Msg
 jsonViewCollectionToHtml collection caption uniqueId depth collapsed =
     let
+        firstSummaryLine jsonVal uniqueId collapsed =
+            let
+                isCollapsed =
+                    Set.member uniqueId collapsed
+            in
+            if JsonViewer.isJsonCollection jsonVal then
+                span
+                    [ class "JsonView__collapsible"
+                    , onClick (ToggleJsonCollectionView uniqueId)
+                    ]
+                    [ if isCollapsed then
+                        text arrowRight
+                      else
+                        text arrowDown
+                    , text (caption ++ " (" ++ toString (List.length collection) ++ ")")
+                    ]
+            else
+                Html.text ""
+
         isCollapsed =
             Set.member uniqueId collapsed
-
-        view =
-            [ span
-                [ class "JsonView__collapsible"
-                , onClick (ToggleJsonCollectionView uniqueId)
-                ]
-                [ if isCollapsed then
-                    text arrowRight
-                  else
-                    text arrowDown
-                , text (caption ++ " (" ++ toString (List.length collection) ++ ")")
-                ]
-            ]
     in
     if isCollapsed then
-        div [] view
+        Html.text ""
     else
-        div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
-            (List.append
-                view
-                (List.map
+        let
+            collectionView =
+                List.map
                     (\( uniqueId, elementKey, jsonVal ) ->
-                        p []
+                        li [ class "JsonView__collectionItem" ]
                             [ span
                                 [ class "JsonView__propertyKey" ]
                                 [ text (elementKey ++ ": ") ]
+                            , firstSummaryLine jsonVal uniqueId collapsed
                             , jsonViewToHtml jsonVal uniqueId (depth + 1) collapsed
                             ]
                     )
                     collection
-                )
-            )
+        in
+        ol [ class "JsonView__collectionItemsList", style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
+            collectionView
 
 
 jsonViewToHtml : JsonViewer.JsonView -> String -> Int -> Collapsed -> Html Msg

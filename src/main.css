@@ -7,7 +7,7 @@ body {
 }
 
 div {
-  margin: 0
+    margin: 0
 }
 
 img {
@@ -41,11 +41,13 @@ img {
 }
 
 .JsonView__collapsible:hover {
-  text-decoration: underline;
-  cursor: pointer;
+    text-decoration: underline;
+    cursor: pointer;
 }
+
 .JsonView__propertyKey {
     color: rgb(136, 19, 145);
+    margin-right: 8px;
 }
 
 .JsonView__number {
@@ -59,9 +61,50 @@ img {
 }
 
 .JsonView__null {
-  color: rgb(128, 128, 128);
+    color: rgb(128, 128, 128);
 }
 
 .JsonView__bool {
-  color: rgb(170, 13, 145);
+    color: rgb(170, 13, 145);
+}
+
+.JsonView__collectionGroup {
+  /* display: flex; */
+}
+
+.JsonView__collectionItem {
+    align-items: center;
+    box-sizing: border-box;
+    color: rgb(33, 33, 33);
+    cursor: default;
+    list-style-type: none;
+    min-height: 16px;
+    min-width: 0px;
+    position: relative;
+    tab-size: 4;
+    text-align: left;
+    text-overflow: ellipsis;
+    user-select: text;
+    white-space: nowrap;
+    word-wrap: break-word;
+}
+
+.JsonView__collectionItemsList {
+    box-sizing: border-box;
+    color: rgb(33, 33, 33);
+    cursor: default;
+    display: block;
+    list-style-type: none;
+    min-height: 0px;
+    min-width: 0px;
+    padding-left: 12px;
+    tab-size: 4;
+    user-select: text;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    -webkit-margin-after: 0px;
+    -webkit-margin-before: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-margin-start: 0px;
+    -webkit-padding-start: 12px;
 }
