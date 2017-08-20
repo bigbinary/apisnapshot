@@ -11,7 +11,7 @@ import Set
 
 
 indent =
-    12
+    16
 
 
 arrowRight =
@@ -165,14 +165,27 @@ update msg model =
 ---- VIEW ----
 
 
-httpResponseToMarkup : Http.Response String -> Html msg
-httpResponseToMarkup response =
+httpStatusMarkup : Http.Response String -> Html msg
+httpStatusMarkup response =
     div []
-        [ p [ class "Result__urlDisplay" ] [ text (toString response.url) ]
-        , pre [] [ code [] [ text response.body ] ]
-        , p [] [ text ("Status code: " ++ toString response.status.code) ]
-        , p [] [ text ("Status message: " ++ toString response.status.message) ]
+        [ p [ class "Result__urlDisplay" ] [ text response.url ]
+        , p [] [ text ("Status: " ++ toString response.status.code) ]
+        , p [] [ text response.status.message ]
         ]
+
+
+httpRawResponseMarkup : Http.Response String -> Html msg
+httpRawResponseMarkup response =
+    div []
+        [ h3 [] [ text "Raw Response Body" ]
+        , pre [] [ code [] [ text response.body ] ]
+        ]
+
+
+httpErrorResponseToMarkup : Http.Response String -> Html msg
+httpErrorResponseToMarkup response =
+    div []
+        [ httpStatusMarkup response, httpRawResponseMarkup response ]
 
 
 errorToMarkup : Http.Error -> Html msg
@@ -188,10 +201,10 @@ errorToMarkup error =
             p [ class "Error" ] [ text "There was a network error." ]
 
         Http.BadStatus response ->
-            div [] [ p [ class "Error" ] [ text "Server complained of something..." ], httpResponseToMarkup response ]
+            div [] [ p [ class "Error" ] [ text "Server returned an error." ], httpErrorResponseToMarkup response ]
 
         Http.BadPayload message response ->
-            div [] [ p [ class "Error" ] [ text ("Server complained of bad payload: " ++ message) ], httpResponseToMarkup response ]
+            div [] [ p [ class "Error" ] [ text ("Bad payload error: " ++ message) ], httpErrorResponseToMarkup response ]
 
 
 emptyResponseMarkup : Model -> Html msg
@@ -244,9 +257,9 @@ jsonViewCollectionElementToHtml depth collapsed ( uniqueId, elementKey, jsonVal 
     li [ class "JsonView__collectionItem" ]
         [ span
             [ class "JsonView__propertyKey" ]
-            [ text (elementKey ++ ": ") ]
+            [ text (elementKey ++ ":") ]
         , firstSummaryLine jsonVal uniqueId collapsed
-        , jsonViewToHtml jsonVal uniqueId (depth + 1) collapsed
+        , jsonViewToHtml jsonVal uniqueId depth collapsed
         ]
 
 
@@ -259,7 +272,7 @@ jsonViewCollectionToHtml collection caption uniqueId depth collapsed =
     if isCollapsed then
         Html.text ""
     else
-        ol [ class "JsonView__collectionItemsList", style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
+        ol [ class "JsonView__collectionItemsList", style [ ( "paddingLeft", toString ( (depth+1) * indent) ++ "px" ) ] ]
             (List.map
                 (jsonViewCollectionElementToHtml (depth + 1) collapsed)
                 collection
@@ -314,8 +327,9 @@ view model =
                     [ emptyResponseMarkup model ]
 
                 Just response ->
-                    [ httpResponseToMarkup response.original
+                    [ httpStatusMarkup response.original
                     , div [ class "Result__jsonView" ] [ jsonViewToHtml response.json "root" 0 response.collapsed ]
+                    , httpRawResponseMarkup response.original
                     ]
     in
     div []

@@ -37,7 +37,7 @@ img {
 }
 
 .Error {
-    color: red;
+    color: darkred;
 }
 
 .JsonView__collapsible:hover {
@@ -97,7 +97,6 @@ img {
     list-style-type: none;
     min-height: 0px;
     min-width: 0px;
-    padding-left: 12px;
     tab-size: 4;
     user-select: text;
     white-space: pre-wrap;
@@ -106,5 +105,8 @@ img {
     -webkit-margin-before: 0px;
     -webkit-margin-end: 0px;
     -webkit-margin-start: 0px;
-    -webkit-padding-start: 12px;
+    padding-left: 0px;
+    -webkit-padding-start: 0px;
+    border-left: 1px dotted;
+    margin-bottom: 16px;
 }
