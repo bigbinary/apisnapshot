@@ -1,12 +1,12 @@
 module Main exposing (..)
 
-import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import JSVal
 import Json.Decode
+import JsonViewer
 
 
 ---- MODEL ----
@@ -78,7 +78,7 @@ parseResponseBodyToJSVal httpResponse =
                 Err s ->
                     JSVal.JSString ("Error parsing the body. " ++ s)
     in
-    Debug.log (toString b)
+    Debug.log (toString (JsonViewer.fromJSVal b))
         b
 
 
