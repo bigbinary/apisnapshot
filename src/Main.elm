@@ -267,8 +267,8 @@ jsonViewCollectionToHtml collection caption uniqueId depth collapsed =
 
 
 jsonViewToHtml : JsonViewer.JsonView -> String -> Int -> Collapsed -> Html Msg
-jsonViewToHtml jsonView id depth collapsed =
-    case jsonView of
+jsonViewToHtml jsonVal id depth collapsed =
+    case jsonVal of
         JsonViewer.JVString string ->
             span [ class "JsonView__string" ] [ text string ]
 
@@ -285,10 +285,24 @@ jsonViewToHtml jsonView id depth collapsed =
             span [ class "JsonView__null" ] [ text "(null)" ]
 
         JsonViewer.JVArray array ->
-            jsonViewCollectionToHtml array "Array" id depth collapsed
+            let
+                rendered =
+                    jsonViewCollectionToHtml array "Array" id depth collapsed
+            in
+            if depth == 0 then
+                li [ class "JsonView__collectionItem" ] [ firstSummaryLine jsonVal id collapsed, rendered ]
+            else
+                rendered
 
         JsonViewer.JVObject object ->
-            jsonViewCollectionToHtml object "Object" id depth collapsed
+            let
+                rendered =
+                    jsonViewCollectionToHtml object "Object" id depth collapsed
+            in
+            if depth == 0 then
+                li [ class "JsonView__collectionItem" ] [ firstSummaryLine jsonVal id collapsed, rendered ]
+            else
+                rendered
 
 
 view : Model -> Html Msg
