@@ -85,5 +85,5 @@ fromJSVal_ jsVal parentId =
 
 fromJSVal : JSVal.JSVal -> JsonView
 fromJSVal jsVal =
-    fromJSVal_ jsVal "0"
+    fromJSVal_ jsVal "root"
 

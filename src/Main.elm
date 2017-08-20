@@ -7,18 +7,32 @@ import Http
 import JSVal
 import Json.Decode
 import JsonViewer
+import Set
 
 
 indent =
     12
 
 
+arrowRight =
+    "▶"
+
+
+arrowUp =
+    "▲"
+
+
 
 ---- MODEL ----
 
 
+type alias Collapsed =
+    Set.Set String
+
+
 type alias Response =
     { original : Http.Response String
+    , collapsed : Collapsed
     , json : JsonViewer.JsonView
     }
 
@@ -40,6 +54,7 @@ type Msg
     = Submit
     | ChangeUrl String
     | ResponseAvailable (Result Http.Error (Http.Response String))
+    | ToggleJsonCollectionView String
 
 
 hitUrl : String -> Cmd Msg
@@ -94,6 +109,7 @@ updateResponse model httpResponse =
         , response =
             Just
                 { original = httpResponse
+                , collapsed = Set.empty
                 , json =
                     JsonViewer.fromJSVal (parseResponseBodyToJSVal httpResponse)
                 }
@@ -126,6 +142,23 @@ update msg model =
 
         ResponseAvailable (Err error) ->
             ( updateErrorResponse model error, Cmd.none )
+
+        ToggleJsonCollectionView id ->
+            ( case model.response of
+                Just response ->
+                    let
+                        collapsed =
+                            response.collapsed
+                    in
+                    if Set.member id collapsed then
+                        { model | response = Just { response | collapsed = Set.remove id collapsed } }
+                    else
+                        { model | response = Just { response | collapsed = Set.insert id collapsed } }
+
+                Nothing ->
+                    model
+            , Cmd.none
+            )
 
 
 
@@ -178,8 +211,8 @@ emptyResponseMarkup model =
 ---- VIEW ----
 
 
-jsonViewToHtml : JsonViewer.JsonView -> Int -> Html msg
-jsonViewToHtml jsonView depth =
+jsonViewToHtml : JsonViewer.JsonView -> String -> Int -> Collapsed -> Html Msg
+jsonViewToHtml jsonView id depth collapsed =
     case jsonView of
         JsonViewer.JVString string ->
             span [ class "JsonView__string" ] [ text string ]
@@ -199,19 +232,19 @@ jsonViewToHtml jsonView depth =
         JsonViewer.JVArray array isCollapsed ->
             let
                 view =
-                    [ span [] [ text ("Array (" ++ toString (List.length array) ++ ")") ] ]
+                    [ span [ onClick (ToggleJsonCollectionView id) ] [ text ("Array  (" ++ toString (List.length array) ++ ")") ] ]
             in
-            if isCollapsed then
+            if Set.member id collapsed then
                 div [] view
             else
                 div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
                     (List.append
                         view
                         (List.indexedMap
-                            (\index ( id, jsonVal ) ->
+                            (\index ( elementId, jsonVal ) ->
                                 p []
                                     [ span [ class "JsonView__propertyKey" ] [ text (toString index ++ ": ") ]
-                                    , jsonViewToHtml jsonVal (depth + 1)
+                                    , jsonViewToHtml jsonVal (id ++ "--" ++ toString elementId) (depth + 1) collapsed
                                     ]
                             )
                             array
@@ -221,9 +254,9 @@ jsonViewToHtml jsonView depth =
         JsonViewer.JVObject object isCollapsed ->
             let
                 view =
-                    [ span [] [ text ("Object (" ++ toString (List.length object) ++ ")") ] ]
+                    [ span [ onClick (ToggleJsonCollectionView id) ] [ text ("Object (" ++ toString (List.length object) ++ ")") ] ]
             in
-            if isCollapsed then
+            if Set.member id collapsed then
                 div [] view
             else
                 div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
@@ -233,7 +266,7 @@ jsonViewToHtml jsonView depth =
                             (\( key, jsonVal ) ->
                                 p []
                                     [ span [ class "JsonView__propertyKey" ] [ text (key ++ ": ") ]
-                                    , jsonViewToHtml jsonVal (depth + 1)
+                                    , jsonViewToHtml jsonVal (id ++ "--" ++ key) (depth + 1) collapsed
                                     ]
                             )
                             object
@@ -251,7 +284,7 @@ view model =
 
                 Just response ->
                     [ httpResponseToMarkup response.original
-                    , div [ class "Result__jsonView" ] [ jsonViewToHtml response.json 0 ]
+                    , div [ class "Result__jsonView" ] [ jsonViewToHtml response.json "root" 0 response.collapsed ]
                     ]
     in
     div []
