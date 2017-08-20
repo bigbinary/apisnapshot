@@ -18,8 +18,8 @@ arrowRight =
     "▶ "
 
 
-arrowUp =
-    "▲ "
+arrowDown =
+    "▼ "
 
 
 
@@ -225,7 +225,7 @@ jsonViewCollectionToHtml collection caption uniqueId depth collapsed =
                 [ if isCollapsed then
                     text arrowRight
                   else
-                    text arrowUp
+                    text arrowDown
                 , text (caption ++ " (" ++ toString (List.length collection) ++ ")")
                 ]
             ]
