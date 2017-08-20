@@ -22,7 +22,10 @@ type alias Response =
 
 
 type alias Model =
-    { url : String, response : Maybe Response, error : Maybe Http.Error }
+    { url : String
+    , response : Maybe Response
+    , error : Maybe Http.Error
+    }
 
 
 init : ( Model, Cmd Msg )
