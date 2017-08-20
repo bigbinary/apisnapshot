@@ -211,50 +211,59 @@ emptyResponseMarkup model =
 ---- VIEW ----
 
 
+firstSummaryLine jsonVal uniqueId collapsed =
+    let
+        isCollapsed =
+            Set.member uniqueId collapsed
+
+        render collection caption =
+            span
+                [ class "JsonView__collapsible"
+                , onClick (ToggleJsonCollectionView uniqueId)
+                ]
+                [ if isCollapsed then
+                    text arrowRight
+                  else
+                    text arrowDown
+                , text (caption ++ " (" ++ toString (List.length collection) ++ ")")
+                ]
+    in
+    case jsonVal of
+        JsonViewer.JVArray collection ->
+            render collection "Array"
+
+        JsonViewer.JVObject collection ->
+            render collection "Object"
+
+        _ ->
+            Html.text ""
+
+
+jsonViewCollectionElementToHtml : Int -> Collapsed -> JsonViewer.JVCollectionElement -> Html Msg
+jsonViewCollectionElementToHtml depth collapsed ( uniqueId, elementKey, jsonVal ) =
+    li [ class "JsonView__collectionItem" ]
+        [ span
+            [ class "JsonView__propertyKey" ]
+            [ text (elementKey ++ ": ") ]
+        , firstSummaryLine jsonVal uniqueId collapsed
+        , jsonViewToHtml jsonVal uniqueId (depth + 1) collapsed
+        ]
+
+
 jsonViewCollectionToHtml : JsonViewer.JVCollection -> String -> JsonViewer.UniqueId -> Int -> Collapsed -> Html Msg
 jsonViewCollectionToHtml collection caption uniqueId depth collapsed =
     let
-        firstSummaryLine jsonVal uniqueId collapsed =
-            let
-                isCollapsed =
-                    Set.member uniqueId collapsed
-            in
-            if JsonViewer.isJsonCollection jsonVal then
-                span
-                    [ class "JsonView__collapsible"
-                    , onClick (ToggleJsonCollectionView uniqueId)
-                    ]
-                    [ if isCollapsed then
-                        text arrowRight
-                      else
-                        text arrowDown
-                    , text (caption ++ " (" ++ toString (List.length collection) ++ ")")
-                    ]
-            else
-                Html.text ""
-
         isCollapsed =
             Set.member uniqueId collapsed
     in
     if isCollapsed then
         Html.text ""
     else
-        let
-            collectionView =
-                List.map
-                    (\( uniqueId, elementKey, jsonVal ) ->
-                        li [ class "JsonView__collectionItem" ]
-                            [ span
-                                [ class "JsonView__propertyKey" ]
-                                [ text (elementKey ++ ": ") ]
-                            , firstSummaryLine jsonVal uniqueId collapsed
-                            , jsonViewToHtml jsonVal uniqueId (depth + 1) collapsed
-                            ]
-                    )
-                    collection
-        in
         ol [ class "JsonView__collectionItemsList", style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
-            collectionView
+            (List.map
+                (jsonViewCollectionElementToHtml (depth + 1) collapsed)
+                collection
+            )
 
 
 jsonViewToHtml : JsonViewer.JsonView -> String -> Int -> Collapsed -> Html Msg

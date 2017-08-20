@@ -14,9 +14,13 @@ type alias UniqueId =
     String
 
 
+type alias JVCollectionElement =
+    ( UniqueId, ElementKey, JsonView )
+
+
 type alias JVCollection =
     -- This type can hold both objects and arrays. The `elementKey` of arrays are their positional indices.
-    List ( UniqueId, ElementKey, JsonView )
+    List JVCollectionElement
 
 
 type JsonView
