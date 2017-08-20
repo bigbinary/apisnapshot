@@ -221,7 +221,15 @@ view model =
     in
     div []
         [ Html.form [ class "UrlForm", onSubmit Msg.Submit, action "javascript:void(0)" ]
-            [ input [ class "UrlForm__input", name "url", type_ "text", placeholder "Enter url here", onInput Msg.ChangeUrl, value model.url ] []
+            [ input
+                [ class "UrlForm__input"
+                , name "url"
+                , type_ "text"
+                , placeholder "Enter url here"
+                , onInput Msg.ChangeUrl
+                , value model.url
+                ]
+                []
             , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
             ]
         , div [ class "Result" ] responseMarkup
