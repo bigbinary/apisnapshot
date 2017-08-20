@@ -1,7 +1,18 @@
 module JsonViewer exposing (CollapsedNodes, JsonView, fromJSVal, view)
 
-{-| JsonViewer transforms a `JSVal` (JSON data) into a renderable structure, and
-provides a view that can collapse and expand nested values.
+{-| JsonViewer transforms a the parsed Json data (`JSVal`) into the 
+renderable structure `JsonView`, and provides a renderer for it in 
+which the user can collapse and expand nested values.
+
+While `JSVal` is a plain tree of data that comes from simply parsing the
+incoming JSON response, the `JsonView` structure defined here adds a 
+unique id to every element, and also transforms both objects and arrays
+into a homogeneous collection type so that they can be rendered with the 
+same code.
+
+Having a uniqueId makes it possible to refer unambiguously to any value
+in the Json, which is needed since we don't have object references in
+value-based programming.
 
 
 # Usage
