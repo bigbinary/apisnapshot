@@ -16,7 +16,7 @@ import Set
 
 type alias Response =
     { original : Http.Response String
-    , collapsed : JsonViewer.Collapsed
+    , collapsedNodes : JsonViewer.CollapsedNodes
     , json : JsonViewer.JsonView
     }
 
@@ -86,7 +86,7 @@ updateResponse model httpResponse =
         , response =
             Just
                 { original = httpResponse
-                , collapsed = Set.empty
+                , collapsedNodes = Set.empty
                 , json =
                     JsonViewer.fromJSVal (parseResponseBodyToJSVal httpResponse)
                 }
@@ -124,13 +124,13 @@ update msg model =
             ( case model.response of
                 Just response ->
                     let
-                        collapsed =
-                            response.collapsed
+                        collapsedNodes =
+                            response.collapsedNodes
                     in
-                    if Set.member id collapsed then
-                        { model | response = Just { response | collapsed = Set.remove id collapsed } }
+                    if Set.member id collapsedNodes then
+                        { model | response = Just { response | collapsedNodes = Set.remove id collapsedNodes } }
                     else
-                        { model | response = Just { response | collapsed = Set.insert id collapsed } }
+                        { model | response = Just { response | collapsedNodes = Set.insert id collapsedNodes } }
 
                 Nothing ->
                     model
@@ -211,7 +211,7 @@ view model =
 
                 Just response ->
                     [ httpStatusMarkup response.original
-                    , div [ class "Result__jsonView" ] [ JsonViewer.view response.json "root" 0 response.collapsed ]
+                    , div [ class "Result__jsonView" ] [ JsonViewer.view response.json "root" 0 response.collapsedNodes ]
                     , httpRawResponseMarkup response.original
                     ]
     in
