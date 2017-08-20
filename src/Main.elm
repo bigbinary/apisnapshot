@@ -22,7 +22,7 @@ type alias Response =
 
 
 type alias Model =
-    { url : String, response : Maybe Response, error : Maybe String }
+    { url : String, response : Maybe Response, error : Maybe Http.Error }
 
 
 init : ( Model, Cmd Msg )
@@ -56,14 +56,14 @@ buildRequest url =
         , headers = []
         , url = url
         , body = Http.emptyBody
-        , expect = Http.expectStringResponse parseResponse
+        , expect = Http.expectStringResponse preserveFullResponse
         , timeout = Nothing
         , withCredentials = False
         }
 
 
-parseResponse : Http.Response String -> Result String (Http.Response String)
-parseResponse resp =
+preserveFullResponse : Http.Response String -> Result String (Http.Response String)
+preserveFullResponse resp =
     Ok resp
 
 
@@ -72,14 +72,19 @@ changeUrl model newUrl =
     { model | url = newUrl }
 
 
+parseResponseBodyToBBJson : Http.Response String -> BBJson
+parseResponseBodyToBBJson httpResponse =
+    { name = "Hello" }
+
+
 updateResponse : Model -> Http.Response String -> Model
 updateResponse model httpResponse =
-    { model | error = Nothing, response = Just { original = httpResponse, json = { name = "Parsed" } } }
+    { model | error = Nothing, response = Just { original = httpResponse, json = parseResponseBodyToBBJson httpResponse } }
 
 
-updateErrorResponse : Model -> String -> Model
+updateErrorResponse : Model -> Http.Error -> Model
 updateErrorResponse model error =
-    { model | error = Just (toString error), response = Nothing }
+    { model | error = Just error, response = Nothing }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -97,33 +102,52 @@ update msg model =
             ( updateResponse model value, Cmd.none )
 
         ResponseAvailable (Err error) ->
-            ( updateErrorResponse model (toString error), Cmd.none )
+            ( updateErrorResponse model error, Cmd.none )
 
 
 
 ---- VIEW ----
 
 
-emptyResponseMarkup : Model -> Html msg
-emptyResponseMarkup model =
+httpResponseToMarkup : Http.Response String -> Html msg
+httpResponseToMarkup response =
     div []
-        [ pre [] [ text "<>" ]
-        , case model.error of
-            Just message ->
-                h4 [] [ text message ]
-
-            Nothing ->
-                text ""
+        [ p [ class "Result__urlDisplay" ] [ text (toString response.url) ]
+        , pre [] [ code [] [ text response.body ] ]
+        , p [] [ text ("Status code: " ++ toString response.status.code) ]
+        , p [] [ text ("Status message: " ++ toString response.status.message) ]
         ]
 
 
-successfulResponseMarkup : Response -> Html msg
-successfulResponseMarkup response =
+errorToMarkup : Http.Error -> Html msg
+errorToMarkup error =
+    case error of
+        Http.BadUrl url ->
+            p [ class "Error" ] [ text ("Bad Url! " ++ url) ]
+
+        Http.Timeout ->
+            p [ class "Error" ] [ text "Sorry the request timed out" ]
+
+        Http.NetworkError ->
+            p [ class "Error" ] [ text "There was a network error." ]
+
+        Http.BadStatus response ->
+            div [] [ p [ class "Error" ] [ text "Server complained of something..." ], httpResponseToMarkup response ]
+
+        Http.BadPayload message response ->
+            div [] [ p [ class "Error" ] [ text ("Server complained of bad payload: " ++ message) ], httpResponseToMarkup response ]
+
+
+emptyResponseMarkup : Model -> Html msg
+emptyResponseMarkup model =
     div []
-        [ p [ class "Result__urlDisplay" ] [ text (toString response.original.url) ]
-        , pre [] [ code [] [ text response.original.body ] ]
-        , p [] [ text ("Status code: " ++ toString response.original.status.code) ]
-        , p [] [ text ("Status message: " ++ toString response.original.status.message) ]
+        [ case model.error of
+            Just error ->
+                errorToMarkup error
+
+            -- We haven't made any requests so far; no errors, no response, nothing.
+            Nothing ->
+                text ""
         ]
 
 
@@ -136,7 +160,7 @@ view model =
                     emptyResponseMarkup model
 
                 Just response ->
-                    successfulResponseMarkup response
+                    httpResponseToMarkup response.original
     in
     div []
         [ Html.form [ class "UrlForm", onSubmit Submit, action "javascript:void(0)" ]

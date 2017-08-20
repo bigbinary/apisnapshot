@@ -25,4 +25,7 @@ img {
   margin: 2em;
 }
 
-.Result__urlDisplay {}
+.Error {
+  color: red;
+}
+
