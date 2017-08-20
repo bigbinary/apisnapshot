@@ -15,11 +15,11 @@ indent =
 
 
 arrowRight =
-    "▶"
+    "▶ "
 
 
 arrowUp =
-    "▲"
+    "▲ "
 
 
 
@@ -229,12 +229,25 @@ jsonViewToHtml jsonView id depth collapsed =
         JsonViewer.JVNull ->
             span [ class "JsonView__null" ] [ text "(null)" ]
 
-        JsonViewer.JVArray array isCollapsed ->
+        JsonViewer.JVArray array ->
             let
+                isCollapsed =
+                    Set.member id collapsed
+
                 view =
-                    [ span [ onClick (ToggleJsonCollectionView id) ] [ text ("Array  (" ++ toString (List.length array) ++ ")") ] ]
+                    [ span
+                        [ class "JsonView__collapsible"
+                        , onClick (ToggleJsonCollectionView id)
+                        ]
+                        [ if isCollapsed then
+                            text arrowRight
+                          else
+                            text arrowUp
+                        , text ("Array  (" ++ toString (List.length array) ++ ")")
+                        ]
+                    ]
             in
-            if Set.member id collapsed then
+            if isCollapsed then
                 div [] view
             else
                 div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
@@ -243,7 +256,9 @@ jsonViewToHtml jsonView id depth collapsed =
                         (List.indexedMap
                             (\index ( elementId, jsonVal ) ->
                                 p []
-                                    [ span [ class "JsonView__propertyKey" ] [ text (toString index ++ ": ") ]
+                                    [ span
+                                        [ class "JsonView__propertyKey" ]
+                                        [ text (toString index ++ ": ") ]
                                     , jsonViewToHtml jsonVal (id ++ "--" ++ toString elementId) (depth + 1) collapsed
                                     ]
                             )
@@ -251,12 +266,25 @@ jsonViewToHtml jsonView id depth collapsed =
                         )
                     )
 
-        JsonViewer.JVObject object isCollapsed ->
+        JsonViewer.JVObject object ->
             let
+                isCollapsed =
+                    Set.member id collapsed
+
                 view =
-                    [ span [ onClick (ToggleJsonCollectionView id) ] [ text ("Object (" ++ toString (List.length object) ++ ")") ] ]
+                    [ span
+                        [ class "JsonView__collapsible"
+                        , onClick (ToggleJsonCollectionView id)
+                        ]
+                        [ if isCollapsed then
+                            text arrowRight
+                          else
+                            text arrowUp
+                        , text ("Object (" ++ toString (List.length object) ++ ")")
+                        ]
+                    ]
             in
-            if Set.member id collapsed then
+            if isCollapsed then
                 div [] view
             else
                 div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]

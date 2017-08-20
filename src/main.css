@@ -6,6 +6,10 @@ body {
     color: #293c4b;
 }
 
+div {
+  margin: 0
+}
+
 img {
     margin: 20px 0;
     max-width: 200px;
@@ -36,6 +40,10 @@ img {
     color: red;
 }
 
+.JsonView__collapsible:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
 .JsonView__propertyKey {
     color: rgb(136, 19, 145);
 }

@@ -14,18 +14,14 @@ type alias ObjectKey =
     String
 
 
-type alias IsCollapsed =
-    Bool
-
-
 type JsonView
     = JVString String
     | JVFloat Float
     | JVInt Int
     | JVBool Bool
     | JVNull
-    | JVArray (List ( ElementIndex, JsonView )) IsCollapsed
-    | JVObject (List ( ObjectKey, JsonView )) IsCollapsed
+    | JVArray (List ( ElementIndex, JsonView ))
+    | JVObject (List ( ObjectKey, JsonView ))
 
 
 
@@ -77,13 +73,12 @@ fromJSVal_ jsVal parentId =
             JVNull
 
         JSVal.JSArray array ->
-            JVArray (mapArrayElements array parentId) False
+            JVArray (mapArrayElements array parentId)
 
         JSVal.JSObject object ->
-            JVObject (mapObjectElements object parentId) False
+            JVObject (mapObjectElements object parentId)
 
 
 fromJSVal : JSVal.JSVal -> JsonView
 fromJSVal jsVal =
     fromJSVal_ jsVal "root"
-
