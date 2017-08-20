@@ -15,7 +15,7 @@ import Set
 
 
 type alias Response =
-    { original : Http.Response String
+    { raw : Http.Response String
     , collapsedNodes : JsonViewer.CollapsedNodes
     , json : JsonViewer.JsonView
     }
@@ -81,7 +81,7 @@ updateResponse model httpResponse =
         | error = Nothing
         , response =
             Just
-                { original = httpResponse
+                { raw = httpResponse
                 , collapsedNodes = Set.empty
                 , json =
                     JsonViewer.fromJSVal (parseResponseBodyToJSVal httpResponse)
@@ -214,9 +214,9 @@ view model =
                             , collapsedNodes = response.collapsedNodes
                             }
                     in
-                    [ httpStatusMarkup response.original
+                    [ httpStatusMarkup response.raw
                     , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
-                    , httpRawResponseMarkup response.original
+                    , httpRawResponseMarkup response.raw
                     ]
     in
     div []
