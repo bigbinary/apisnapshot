@@ -71,11 +71,11 @@ parseResponseBodyToJSVal httpResponse =
             Json.Decode.decodeString JSVal.decoder httpResponse.body
     in
     case result of
-        Ok v ->
-            v
+        Ok jsonValue ->
+            jsonValue
 
-        Err s ->
-            JSVal.JSString ("Error parsing the body. " ++ s)
+        Err err ->
+            JSVal.JSString ("Error parsing the body. " ++ err)
 
 
 updateModelWithResponse : Model -> Http.Response String -> Model
