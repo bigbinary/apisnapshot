@@ -5,19 +5,16 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Decode as JD
+import JSVal
+import Json.Decode
 
 
 ---- MODEL ----
 
 
-type alias BBJson =
-    { name : String }
-
-
 type alias Response =
     { original : Http.Response String
-    , json : BBJson
+    , json : JSVal.JSVal
     }
 
 
@@ -67,24 +64,37 @@ preserveFullResponse resp =
     Ok resp
 
 
-changeUrl : Model -> String -> Model
-changeUrl model newUrl =
-    { model | url = newUrl }
+parseResponseBodyToJSVal : Http.Response String -> JSVal.JSVal
+parseResponseBodyToJSVal httpResponse =
+    let
+        a =
+            Json.Decode.decodeString JSVal.decoder httpResponse.body
 
+        b =
+            case a of
+                Ok v ->
+                    v
 
-parseResponseBodyToBBJson : Http.Response String -> BBJson
-parseResponseBodyToBBJson httpResponse =
-    { name = "Hello" }
+                Err s ->
+                    JSVal.JSString ("Error parsing the body. " ++ s)
+    in
+    Debug.log (toString b)
+        b
 
 
 updateResponse : Model -> Http.Response String -> Model
 updateResponse model httpResponse =
-    { model | error = Nothing, response = Just { original = httpResponse, json = parseResponseBodyToBBJson httpResponse } }
+    { model | error = Nothing, response = Just { original = httpResponse, json = parseResponseBodyToJSVal httpResponse } }
 
 
 updateErrorResponse : Model -> Http.Error -> Model
 updateErrorResponse model error =
     { model | error = Just error, response = Nothing }
+
+
+changeUrl : Model -> String -> Model
+changeUrl model newUrl =
+    { model | url = newUrl }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
