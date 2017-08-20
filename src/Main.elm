@@ -64,19 +64,15 @@ preserveFullResponse resp =
 parseResponseBodyToJSVal : Http.Response String -> JSVal.JSVal
 parseResponseBodyToJSVal httpResponse =
     let
-        a =
+        result =
             Json.Decode.decodeString JSVal.decoder httpResponse.body
-
-        b =
-            case a of
-                Ok v ->
-                    v
-
-                Err s ->
-                    JSVal.JSString ("Error parsing the body. " ++ s)
     in
-    Debug.log (toString (JsonViewer.fromJSVal b))
-        b
+    case result of
+        Ok v ->
+            v
+
+        Err s ->
+            JSVal.JSString ("Error parsing the body. " ++ s)
 
 
 updateResponse : Model -> Http.Response String -> Model
