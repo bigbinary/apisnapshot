@@ -7,32 +7,16 @@ import Http
 import JSVal
 import Json.Decode
 import JsonViewer
+import Msg exposing (Msg)
 import Set
-
-
-indent =
-    16
-
-
-arrowRight =
-    "▶ "
-
-
-arrowDown =
-    "▼ "
-
 
 
 ---- MODEL ----
 
 
-type alias Collapsed =
-    Set.Set String
-
-
 type alias Response =
     { original : Http.Response String
-    , collapsed : Collapsed
+    , collapsed : JsonViewer.Collapsed
     , json : JsonViewer.JsonView
     }
 
@@ -50,18 +34,11 @@ init =
 ---- UPDATE ----
 
 
-type Msg
-    = Submit
-    | ChangeUrl String
-    | ResponseAvailable (Result Http.Error (Http.Response String))
-    | ToggleJsonCollectionView String
-
-
 hitUrl : String -> Cmd Msg
 hitUrl url =
     let
         cmd =
-            Http.send ResponseAvailable (buildRequest url)
+            Http.send Msg.ResponseAvailable (buildRequest url)
     in
     cmd
 
@@ -129,21 +106,21 @@ changeUrl model newUrl =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ChangeUrl newUrl ->
+        Msg.ChangeUrl newUrl ->
             ( changeUrl model newUrl
             , Cmd.none
             )
 
-        Submit ->
+        Msg.Submit ->
             ( model, hitUrl model.url )
 
-        ResponseAvailable (Ok value) ->
+        Msg.ResponseAvailable (Ok value) ->
             ( updateResponse model value, Cmd.none )
 
-        ResponseAvailable (Err error) ->
+        Msg.ResponseAvailable (Err error) ->
             ( updateErrorResponse model error, Cmd.none )
 
-        ToggleJsonCollectionView id ->
+        Msg.ToggleJsonCollectionView id ->
             ( case model.response of
                 Just response ->
                     let
@@ -224,100 +201,6 @@ emptyResponseMarkup model =
 ---- VIEW ----
 
 
-firstSummaryLine jsonVal uniqueId collapsed =
-    let
-        isCollapsed =
-            Set.member uniqueId collapsed
-
-        render collection caption =
-            span
-                [ class "JsonView__collapsible"
-                , onClick (ToggleJsonCollectionView uniqueId)
-                ]
-                [ if isCollapsed then
-                    text arrowRight
-                  else
-                    text arrowDown
-                , text (caption ++ " (" ++ toString (List.length collection) ++ ")")
-                ]
-    in
-    case jsonVal of
-        JsonViewer.JVArray collection ->
-            render collection "Array"
-
-        JsonViewer.JVObject collection ->
-            render collection "Object"
-
-        _ ->
-            Html.text ""
-
-
-jsonViewCollectionElementToHtml : Int -> Collapsed -> JsonViewer.JVCollectionElement -> Html Msg
-jsonViewCollectionElementToHtml depth collapsed ( uniqueId, elementKey, jsonVal ) =
-    li [ class "JsonView__collectionItem" ]
-        [ span
-            [ class "JsonView__propertyKey" ]
-            [ text (elementKey ++ ":") ]
-        , firstSummaryLine jsonVal uniqueId collapsed
-        , jsonViewToHtml jsonVal uniqueId depth collapsed
-        ]
-
-
-jsonViewCollectionToHtml : JsonViewer.JVCollection -> String -> JsonViewer.UniqueId -> Int -> Collapsed -> Html Msg
-jsonViewCollectionToHtml collection caption uniqueId depth collapsed =
-    let
-        isCollapsed =
-            Set.member uniqueId collapsed
-    in
-    if isCollapsed then
-        Html.text ""
-    else
-        ol [ class "JsonView__collectionItemsList", style [ ( "paddingLeft", toString ( (depth+1) * indent) ++ "px" ) ] ]
-            (List.map
-                (jsonViewCollectionElementToHtml (depth + 1) collapsed)
-                collection
-            )
-
-
-jsonViewToHtml : JsonViewer.JsonView -> String -> Int -> Collapsed -> Html Msg
-jsonViewToHtml jsonVal id depth collapsed =
-    case jsonVal of
-        JsonViewer.JVString string ->
-            span [ class "JsonView__string" ] [ text string ]
-
-        JsonViewer.JVFloat float ->
-            span [ class "JsonView__number" ] [ text (toString float) ]
-
-        JsonViewer.JVInt int ->
-            span [ class "JsonView__number" ] [ text (toString int) ]
-
-        JsonViewer.JVBool bool ->
-            span [ class "JsonView__bool" ] [ text (toString bool) ]
-
-        JsonViewer.JVNull ->
-            span [ class "JsonView__null" ] [ text "(null)" ]
-
-        JsonViewer.JVArray array ->
-            let
-                rendered =
-                    jsonViewCollectionToHtml array "Array" id depth collapsed
-            in
-            if depth == 0 then
-                li [ class "JsonView__collectionItem" ] [ firstSummaryLine jsonVal id collapsed, rendered ]
-            else
-                rendered
-
-        JsonViewer.JVObject object ->
-            let
-                rendered =
-                    jsonViewCollectionToHtml object "Object" id depth collapsed
-            in
-            if depth == 0 then
-                li [ class "JsonView__collectionItem" ] [ firstSummaryLine jsonVal id collapsed, rendered ]
-            else
-                rendered
-
-
 view : Model -> Html Msg
 view model =
     let
@@ -328,13 +211,13 @@ view model =
 
                 Just response ->
                     [ httpStatusMarkup response.original
-                    , div [ class "Result__jsonView" ] [ jsonViewToHtml response.json "root" 0 response.collapsed ]
+                    , div [ class "Result__jsonView" ] [ JsonViewer.toHtml response.json "root" 0 response.collapsed ]
                     , httpRawResponseMarkup response.original
                     ]
     in
     div []
-        [ Html.form [ class "UrlForm", onSubmit Submit, action "javascript:void(0)" ]
-            [ input [ class "UrlForm__input", name "url", type_ "text", placeholder "Enter url here", onInput ChangeUrl, value model.url ] []
+        [ Html.form [ class "UrlForm", onSubmit Msg.Submit, action "javascript:void(0)" ]
+            [ input [ class "UrlForm__input", name "url", type_ "text", placeholder "Enter url here", onInput Msg.ChangeUrl, value model.url ] []
             , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
             ]
         , div [ class "Result" ] responseMarkup
