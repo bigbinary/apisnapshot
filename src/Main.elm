@@ -9,12 +9,17 @@ import Json.Decode
 import JsonViewer
 
 
+indent =
+    12
+
+
+
 ---- MODEL ----
 
 
 type alias Response =
     { original : Http.Response String
-    , json : JSVal.JSVal
+    , json : JsonViewer.JsonView
     }
 
 
@@ -84,7 +89,15 @@ parseResponseBodyToJSVal httpResponse =
 
 updateResponse : Model -> Http.Response String -> Model
 updateResponse model httpResponse =
-    { model | error = Nothing, response = Just { original = httpResponse, json = parseResponseBodyToJSVal httpResponse } }
+    { model
+        | error = Nothing
+        , response =
+            Just
+                { original = httpResponse
+                , json =
+                    JsonViewer.fromJSVal (parseResponseBodyToJSVal httpResponse)
+                }
+    }
 
 
 updateErrorResponse : Model -> Http.Error -> Model
@@ -161,23 +174,92 @@ emptyResponseMarkup model =
         ]
 
 
+
+---- VIEW ----
+
+
+jsonViewToHtml : JsonViewer.JsonView -> Int -> Html msg
+jsonViewToHtml jsonView depth =
+    case jsonView of
+        JsonViewer.JVString string ->
+            span [ class "JsonView__string" ] [ text string ]
+
+        JsonViewer.JVFloat float ->
+            span [ class "JsonView__number" ] [ text (toString float) ]
+
+        JsonViewer.JVInt int ->
+            span [ class "JsonView__number" ] [ text (toString int) ]
+
+        JsonViewer.JVBool bool ->
+            span [ class "JsonView__bool" ] [ text (toString bool) ]
+
+        JsonViewer.JVNull ->
+            span [ class "JsonView__null" ] [ text "(null)" ]
+
+        JsonViewer.JVArray array isCollapsed ->
+            let
+                view =
+                    [ span [] [ text ("Array (" ++ toString (List.length array) ++ ")") ] ]
+            in
+            if isCollapsed then
+                div [] view
+            else
+                div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
+                    (List.append
+                        view
+                        (List.indexedMap
+                            (\index ( id, jsonVal ) ->
+                                p []
+                                    [ span [ class "JsonView__propertyKey" ] [ text (toString index ++ ": ") ]
+                                    , jsonViewToHtml jsonVal (depth + 1)
+                                    ]
+                            )
+                            array
+                        )
+                    )
+
+        JsonViewer.JVObject object isCollapsed ->
+            let
+                view =
+                    [ span [] [ text ("Object (" ++ toString (List.length object) ++ ")") ] ]
+            in
+            if isCollapsed then
+                div [] view
+            else
+                div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
+                    (List.append
+                        view
+                        (List.map
+                            (\( key, jsonVal ) ->
+                                p []
+                                    [ span [ class "JsonView__propertyKey" ] [ text (key ++ ": ") ]
+                                    , jsonViewToHtml jsonVal (depth + 1)
+                                    ]
+                            )
+                            object
+                        )
+                    )
+
+
 view : Model -> Html Msg
 view model =
     let
         responseMarkup =
             case model.response of
                 Nothing ->
-                    emptyResponseMarkup model
+                    [ emptyResponseMarkup model ]
 
                 Just response ->
-                    httpResponseToMarkup response.original
+                    [ httpResponseToMarkup response.original
+                    , div [ class "Result__jsonView" ] [ jsonViewToHtml response.json 0 ]
+                    ]
     in
     div []
         [ Html.form [ class "UrlForm", onSubmit Submit, action "javascript:void(0)" ]
             [ input [ class "UrlForm__input", name "url", type_ "text", placeholder "Enter url here", onInput ChangeUrl, value model.url ] []
             , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
             ]
-        , div [ class "Result" ] [ responseMarkup ]
+        , div [ class "Result" ] responseMarkup
         ]
 
 

@@ -1,5 +1,8 @@
 module JsonViewer exposing (..)
 
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import JSVal
 
 
@@ -83,9 +86,4 @@ fromJSVal_ jsVal parentId =
 fromJSVal : JSVal.JSVal -> JsonView
 fromJSVal jsVal =
     fromJSVal_ jsVal "0"
-
-
-
----- VIEW ----
-
 
