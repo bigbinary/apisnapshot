@@ -6,12 +6,17 @@ import Html.Events exposing (..)
 import JSVal
 
 
-type alias ElementIndex =
+type alias ElementKey =
     String
 
 
-type alias ObjectKey =
+type alias UniqueId =
     String
+
+
+type alias JVCollection =
+    -- This type can hold both objects and arrays. The `elementKey` of arrays are their positional indices.
+    List ( UniqueId, ElementKey, JsonView )
 
 
 type JsonView
@@ -20,36 +25,36 @@ type JsonView
     | JVInt Int
     | JVBool Bool
     | JVNull
-    | JVArray (List ( ElementIndex, JsonView ))
-    | JVObject (List ( ObjectKey, JsonView ))
+    | JVArray JVCollection
+    | JVObject JVCollection
 
 
 
 ---- Construct a JsonViewer from plain JSVal ----
 
 
-mapArrayElements : List JSVal.JSVal -> String -> List ( ElementIndex, JsonView )
+mapArrayElements : List JSVal.JSVal -> String -> List ( UniqueId, ElementKey, JsonView )
 mapArrayElements jsValsList parentId =
     List.indexedMap
         (\id jsValElement ->
             let
-                elementId =
+                uniqueId =
                     parentId ++ "-" ++ toString id
             in
-            ( elementId, fromJSVal_ jsValElement elementId )
+            ( uniqueId, toString id, fromJSVal_ jsValElement uniqueId )
         )
         jsValsList
 
 
-mapObjectElements : List ( ObjectKey, JSVal.JSVal ) -> String -> List ( ObjectKey, JsonView )
+mapObjectElements : List ( ElementKey, JSVal.JSVal ) -> String -> List ( UniqueId, ElementKey, JsonView )
 mapObjectElements jsValsList parentId =
     List.map
         (\( key, jsVal ) ->
             let
-                elementId =
+                uniqueId =
                     parentId ++ "-" ++ key
             in
-            ( key, fromJSVal_ jsVal elementId )
+            ( uniqueId, key, fromJSVal_ jsVal uniqueId )
         )
         jsValsList
 

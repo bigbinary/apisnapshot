@@ -211,6 +211,45 @@ emptyResponseMarkup model =
 ---- VIEW ----
 
 
+jsonViewCollectionToHtml : JsonViewer.JVCollection -> String -> JsonViewer.UniqueId -> Int -> Collapsed -> Html Msg
+jsonViewCollectionToHtml collection caption uniqueId depth collapsed =
+    let
+        isCollapsed =
+            Set.member uniqueId collapsed
+
+        view =
+            [ span
+                [ class "JsonView__collapsible"
+                , onClick (ToggleJsonCollectionView uniqueId)
+                ]
+                [ if isCollapsed then
+                    text arrowRight
+                  else
+                    text arrowUp
+                , text (caption ++ " (" ++ toString (List.length collection) ++ ")")
+                ]
+            ]
+    in
+    if isCollapsed then
+        div [] view
+    else
+        div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
+            (List.append
+                view
+                (List.map
+                    (\( uniqueId, elementKey, jsonVal ) ->
+                        p []
+                            [ span
+                                [ class "JsonView__propertyKey" ]
+                                [ text (elementKey ++ ": ") ]
+                            , jsonViewToHtml jsonVal uniqueId (depth + 1) collapsed
+                            ]
+                    )
+                    collection
+                )
+            )
+
+
 jsonViewToHtml : JsonViewer.JsonView -> String -> Int -> Collapsed -> Html Msg
 jsonViewToHtml jsonView id depth collapsed =
     case jsonView of
@@ -230,76 +269,10 @@ jsonViewToHtml jsonView id depth collapsed =
             span [ class "JsonView__null" ] [ text "(null)" ]
 
         JsonViewer.JVArray array ->
-            let
-                isCollapsed =
-                    Set.member id collapsed
-
-                view =
-                    [ span
-                        [ class "JsonView__collapsible"
-                        , onClick (ToggleJsonCollectionView id)
-                        ]
-                        [ if isCollapsed then
-                            text arrowRight
-                          else
-                            text arrowUp
-                        , text ("Array  (" ++ toString (List.length array) ++ ")")
-                        ]
-                    ]
-            in
-            if isCollapsed then
-                div [] view
-            else
-                div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
-                    (List.append
-                        view
-                        (List.indexedMap
-                            (\index ( elementId, jsonVal ) ->
-                                p []
-                                    [ span
-                                        [ class "JsonView__propertyKey" ]
-                                        [ text (toString index ++ ": ") ]
-                                    , jsonViewToHtml jsonVal (id ++ "--" ++ toString elementId) (depth + 1) collapsed
-                                    ]
-                            )
-                            array
-                        )
-                    )
+            jsonViewCollectionToHtml array "Array" id depth collapsed
 
         JsonViewer.JVObject object ->
-            let
-                isCollapsed =
-                    Set.member id collapsed
-
-                view =
-                    [ span
-                        [ class "JsonView__collapsible"
-                        , onClick (ToggleJsonCollectionView id)
-                        ]
-                        [ if isCollapsed then
-                            text arrowRight
-                          else
-                            text arrowUp
-                        , text ("Object (" ++ toString (List.length object) ++ ")")
-                        ]
-                    ]
-            in
-            if isCollapsed then
-                div [] view
-            else
-                div [ style [ ( "marginLeft", toString (depth * indent) ++ "px" ) ] ]
-                    (List.append
-                        view
-                        (List.map
-                            (\( key, jsonVal ) ->
-                                p []
-                                    [ span [ class "JsonView__propertyKey" ] [ text (key ++ ": ") ]
-                                    , jsonViewToHtml jsonVal (id ++ "--" ++ key) (depth + 1) collapsed
-                                    ]
-                            )
-                            object
-                        )
-                    )
+            jsonViewCollectionToHtml object "Object" id depth collapsed
 
 
 view : Model -> Html Msg
