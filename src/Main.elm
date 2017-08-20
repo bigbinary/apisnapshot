@@ -78,8 +78,8 @@ parseResponseBodyToJSVal httpResponse =
             JSVal.JSString ("Error parsing the body. " ++ s)
 
 
-updateResponse : Model -> Http.Response String -> Model
-updateResponse model httpResponse =
+updateModelWithResponse : Model -> Http.Response String -> Model
+updateModelWithResponse model httpResponse =
     { model
         | error = Nothing
         , response =
@@ -114,7 +114,7 @@ update msg model =
             ( model, hitUrl model.url )
 
         Msg.ResponseAvailable (Ok value) ->
-            ( updateResponse model value, Cmd.none )
+            ( updateModelWithResponse model value, Cmd.none )
 
         Msg.ResponseAvailable (Err error) ->
             ( updateErrorResponse model error, Cmd.none )
