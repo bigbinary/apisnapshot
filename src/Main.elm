@@ -15,14 +15,17 @@ import Set
 
 
 type alias Response =
-    { original : Http.Response String
+    { raw : Http.Response String
     , collapsedNodes : JsonViewer.CollapsedNodes
     , json : JsonViewer.JsonView
     }
 
 
 type alias Model =
-    { url : String, response : Maybe Response, error : Maybe Http.Error }
+    { url : String
+    , response : Maybe Response
+    , error : Maybe Http.Error
+    }
 
 
 init : ( Model, Cmd Msg )
@@ -68,20 +71,20 @@ parseResponseBodyToJSVal httpResponse =
             Json.Decode.decodeString JSVal.decoder httpResponse.body
     in
     case result of
-        Ok v ->
-            v
+        Ok jsonValue ->
+            jsonValue
 
-        Err s ->
-            JSVal.JSString ("Error parsing the body. " ++ s)
+        Err err ->
+            JSVal.JSString ("Error parsing the body. " ++ err)
 
 
-updateResponse : Model -> Http.Response String -> Model
-updateResponse model httpResponse =
+updateModelWithResponse : Model -> Http.Response String -> Model
+updateModelWithResponse model httpResponse =
     { model
         | error = Nothing
         , response =
             Just
-                { original = httpResponse
+                { raw = httpResponse
                 , collapsedNodes = Set.empty
                 , json =
                     JsonViewer.fromJSVal (parseResponseBodyToJSVal httpResponse)
@@ -111,7 +114,7 @@ update msg model =
             ( model, hitUrl model.url )
 
         Msg.ResponseAvailable (Ok value) ->
-            ( updateResponse model value, Cmd.none )
+            ( updateModelWithResponse model value, Cmd.none )
 
         Msg.ResponseAvailable (Err error) ->
             ( updateErrorResponse model error, Cmd.none )
@@ -214,14 +217,22 @@ view model =
                             , collapsedNodes = response.collapsedNodes
                             }
                     in
-                    [ httpStatusMarkup response.original
+                    [ httpStatusMarkup response.raw
                     , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
-                    , httpRawResponseMarkup response.original
+                    , httpRawResponseMarkup response.raw
                     ]
     in
     div []
         [ Html.form [ class "UrlForm", onSubmit Msg.Submit, action "javascript:void(0)" ]
-            [ input [ class "UrlForm__input", name "url", type_ "text", placeholder "Enter url here", onInput Msg.ChangeUrl, value model.url ] []
+            [ input
+                [ class "UrlForm__input"
+                , name "url"
+                , type_ "text"
+                , placeholder "Enter url here"
+                , onInput Msg.ChangeUrl
+                , value model.url
+                ]
+                []
             , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
             ]
         , div [ class "Result" ] responseMarkup
