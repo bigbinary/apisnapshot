@@ -116,7 +116,7 @@ update msg model =
             )
 
         Msg.Submit ->
-            ( model, hitUrl model.url )
+            ( { model | pageState = Loading }, hitUrl model.url )
 
         Msg.ResponseAvailable (Ok value) ->
             ( updateModelWithResponse model value, Cmd.none )
@@ -218,7 +218,7 @@ view model =
                     text ""
 
                 Loading ->
-                    text "Loading..."
+                    p [class "Main__loading"] [text "Loading..."]
 
                 Error error ->
                     errorMarkup error
