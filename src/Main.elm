@@ -21,16 +21,22 @@ type alias Response =
     }
 
 
+type PageState
+    = Empty
+    | Loading
+    | Error Http.Error
+    | Loaded Response
+
+
 type alias Model =
     { url : String
-    , response : Maybe Response
-    , error : Maybe Http.Error
+    , pageState : PageState
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { url = "https://swapi.co/api/people/1/", response = Nothing, error = Nothing }, Cmd.none )
+    ( { url = "https://swapi.co/api/people/1/", pageState = Empty }, Cmd.none )
 
 
 
@@ -81,9 +87,8 @@ parseResponseBodyToJSVal httpResponse =
 updateModelWithResponse : Model -> Http.Response String -> Model
 updateModelWithResponse model httpResponse =
     { model
-        | error = Nothing
-        , response =
-            Just
+        | pageState =
+            Loaded
                 { raw = httpResponse
                 , collapsedNodes = Set.empty
                 , json =
@@ -94,7 +99,7 @@ updateModelWithResponse model httpResponse =
 
 updateErrorResponse : Model -> Http.Error -> Model
 updateErrorResponse model error =
-    { model | error = Just error, response = Nothing }
+    { model | pageState = Error error }
 
 
 changeUrl : Model -> String -> Model
@@ -111,7 +116,7 @@ update msg model =
             )
 
         Msg.Submit ->
-            ( model, hitUrl model.url )
+            ( { model | pageState = Loading }, hitUrl model.url )
 
         Msg.ResponseAvailable (Ok value) ->
             ( updateModelWithResponse model value, Cmd.none )
@@ -120,18 +125,18 @@ update msg model =
             ( updateErrorResponse model error, Cmd.none )
 
         Msg.ToggleJsonCollectionView id ->
-            ( case model.response of
-                Just response ->
+            ( case model.pageState of
+                Loaded response ->
                     let
                         collapsedNodes =
                             response.collapsedNodes
                     in
                     if Set.member id collapsedNodes then
-                        { model | response = Just { response | collapsedNodes = Set.remove id collapsedNodes } }
+                        { model | pageState = Loaded { response | collapsedNodes = Set.remove id collapsedNodes } }
                     else
-                        { model | response = Just { response | collapsedNodes = Set.insert id collapsedNodes } }
+                        { model | pageState = Loaded { response | collapsedNodes = Set.insert id collapsedNodes } }
 
-                Nothing ->
+                _ ->
                     model
             , Cmd.none
             )
@@ -158,14 +163,14 @@ httpRawResponseMarkup response =
         ]
 
 
-httpErrorResponseToMarkup : Http.Response String -> Html msg
-httpErrorResponseToMarkup response =
+httpErrorMarkup : Http.Response String -> Html msg
+httpErrorMarkup response =
     div []
         [ httpStatusMarkup response, httpRawResponseMarkup response ]
 
 
-errorToMarkup : Http.Error -> Html msg
-errorToMarkup error =
+errorMarkup : Http.Error -> Html msg
+errorMarkup error =
     case error of
         Http.BadUrl url ->
             p [ class "Error" ] [ text ("Bad Url! " ++ url) ]
@@ -177,22 +182,26 @@ errorToMarkup error =
             p [ class "Error" ] [ text "There was a network error." ]
 
         Http.BadStatus response ->
-            div [] [ p [ class "Error" ] [ text "Server returned an error." ], httpErrorResponseToMarkup response ]
+            div [] [ p [ class "Error" ] [ text "Server returned an error." ], httpErrorMarkup response ]
 
         Http.BadPayload message response ->
-            div [] [ p [ class "Error" ] [ text ("Bad payload error: " ++ message) ], httpErrorResponseToMarkup response ]
+            div [] [ p [ class "Error" ] [ text ("Bad payload error: " ++ message) ], httpErrorMarkup response ]
 
 
-emptyResponseMarkup : Model -> Html msg
-emptyResponseMarkup model =
+responseMarkup : Response -> Html Msg
+responseMarkup response =
+    let
+        rootNode =
+            { jsonVal = response.json
+            , uniqueId = "root"
+            , depth = 0
+            , collapsedNodes = response.collapsedNodes
+            }
+    in
     div []
-        [ case model.error of
-            Just error ->
-                errorToMarkup error
-
-            -- We haven't made any requests so far; no errors, no response, nothing.
-            Nothing ->
-                text ""
+        [ httpStatusMarkup response.raw
+        , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
+        , httpRawResponseMarkup response.raw
         ]
 
 
@@ -203,24 +212,19 @@ emptyResponseMarkup model =
 view : Model -> Html Msg
 view model =
     let
-        responseMarkup =
-            case model.response of
-                Nothing ->
-                    [ emptyResponseMarkup model ]
+        responseView =
+            case model.pageState of
+                Empty ->
+                    text ""
 
-                Just response ->
-                    let
-                        rootNode =
-                            { jsonVal = response.json
-                            , uniqueId = "root"
-                            , depth = 0
-                            , collapsedNodes = response.collapsedNodes
-                            }
-                    in
-                    [ httpStatusMarkup response.raw
-                    , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
-                    , httpRawResponseMarkup response.raw
-                    ]
+                Loading ->
+                    p [class "Main__loading"] [text "Loading..."]
+
+                Error error ->
+                    errorMarkup error
+
+                Loaded response ->
+                    responseMarkup response
     in
     div []
         [ Html.form [ class "UrlForm", onSubmit Msg.Submit, action "javascript:void(0)" ]
@@ -235,7 +239,7 @@ view model =
                 []
             , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
             ]
-        , div [ class "Result" ] responseMarkup
+        , div [ class "Result" ] [ responseView ]
         ]
 
 
