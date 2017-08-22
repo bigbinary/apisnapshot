@@ -21,16 +21,22 @@ type alias Response =
     }
 
 
+type PageState
+    = Empty
+    | Loading
+    | Error Http.Error
+    | Loaded Response
+
+
 type alias Model =
     { url : String
-    , response : Maybe Response
-    , error : Maybe Http.Error
+    , pageState : PageState
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { url = "https://swapi.co/api/people/1/", response = Nothing, error = Nothing }, Cmd.none )
+    ( { url = "https://swapi.co/api/people/1/", pageState = Empty }, Cmd.none )
 
 
 
@@ -81,9 +87,8 @@ parseResponseBodyToJSVal httpResponse =
 updateModelWithResponse : Model -> Http.Response String -> Model
 updateModelWithResponse model httpResponse =
     { model
-        | error = Nothing
-        , response =
-            Just
+        | pageState =
+            Loaded
                 { raw = httpResponse
                 , collapsedNodes = Set.empty
                 , json =
@@ -94,7 +99,7 @@ updateModelWithResponse model httpResponse =
 
 updateErrorResponse : Model -> Http.Error -> Model
 updateErrorResponse model error =
-    { model | error = Just error, response = Nothing }
+    { model | pageState = Error error }
 
 
 changeUrl : Model -> String -> Model
@@ -120,18 +125,18 @@ update msg model =
             ( updateErrorResponse model error, Cmd.none )
 
         Msg.ToggleJsonCollectionView id ->
-            ( case model.response of
-                Just response ->
+            ( case model.pageState of
+                Loaded response ->
                     let
                         collapsedNodes =
                             response.collapsedNodes
                     in
                     if Set.member id collapsedNodes then
-                        { model | response = Just { response | collapsedNodes = Set.remove id collapsedNodes } }
+                        { model | pageState = Loaded { response | collapsedNodes = Set.remove id collapsedNodes } }
                     else
-                        { model | response = Just { response | collapsedNodes = Set.insert id collapsedNodes } }
+                        { model | pageState = Loaded { response | collapsedNodes = Set.insert id collapsedNodes } }
 
-                Nothing ->
+                _ ->
                     model
             , Cmd.none
             )
@@ -183,19 +188,6 @@ errorToMarkup error =
             div [] [ p [ class "Error" ] [ text ("Bad payload error: " ++ message) ], httpErrorResponseToMarkup response ]
 
 
-emptyResponseMarkup : Model -> Html msg
-emptyResponseMarkup model =
-    div []
-        [ case model.error of
-            Just error ->
-                errorToMarkup error
-
-            -- We haven't made any requests so far; no errors, no response, nothing.
-            Nothing ->
-                text ""
-        ]
-
-
 
 ---- VIEW ----
 
@@ -204,11 +196,17 @@ view : Model -> Html Msg
 view model =
     let
         responseMarkup =
-            case model.response of
-                Nothing ->
-                    [ emptyResponseMarkup model ]
+            case model.pageState of
+                Empty ->
+                    [ text "" ]
 
-                Just response ->
+                Loading ->
+                    [ text "Loading..." ]
+
+                Error error ->
+                    [ errorToMarkup error ]
+
+                Loaded response ->
                     let
                         rootNode =
                             { jsonVal = response.json
