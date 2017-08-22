@@ -163,14 +163,14 @@ httpRawResponseMarkup response =
         ]
 
 
-httpErrorResponseToMarkup : Http.Response String -> Html msg
-httpErrorResponseToMarkup response =
+httpErrorMarkup : Http.Response String -> Html msg
+httpErrorMarkup response =
     div []
         [ httpStatusMarkup response, httpRawResponseMarkup response ]
 
 
-errorToMarkup : Http.Error -> Html msg
-errorToMarkup error =
+errorMarkup : Http.Error -> Html msg
+errorMarkup error =
     case error of
         Http.BadUrl url ->
             p [ class "Error" ] [ text ("Bad Url! " ++ url) ]
@@ -182,10 +182,27 @@ errorToMarkup error =
             p [ class "Error" ] [ text "There was a network error." ]
 
         Http.BadStatus response ->
-            div [] [ p [ class "Error" ] [ text "Server returned an error." ], httpErrorResponseToMarkup response ]
+            div [] [ p [ class "Error" ] [ text "Server returned an error." ], httpErrorMarkup response ]
 
         Http.BadPayload message response ->
-            div [] [ p [ class "Error" ] [ text ("Bad payload error: " ++ message) ], httpErrorResponseToMarkup response ]
+            div [] [ p [ class "Error" ] [ text ("Bad payload error: " ++ message) ], httpErrorMarkup response ]
+
+
+responseMarkup : Response -> Html Msg
+responseMarkup response =
+    let
+        rootNode =
+            { jsonVal = response.json
+            , uniqueId = "root"
+            , depth = 0
+            , collapsedNodes = response.collapsedNodes
+            }
+    in
+    div []
+        [ httpStatusMarkup response.raw
+        , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
+        , httpRawResponseMarkup response.raw
+        ]
 
 
 
@@ -195,30 +212,19 @@ errorToMarkup error =
 view : Model -> Html Msg
 view model =
     let
-        responseMarkup =
+        responseView =
             case model.pageState of
                 Empty ->
-                    [ text "" ]
+                    text ""
 
                 Loading ->
-                    [ text "Loading..." ]
+                    text "Loading..."
 
                 Error error ->
-                    [ errorToMarkup error ]
+                    errorMarkup error
 
                 Loaded response ->
-                    let
-                        rootNode =
-                            { jsonVal = response.json
-                            , uniqueId = "root"
-                            , depth = 0
-                            , collapsedNodes = response.collapsedNodes
-                            }
-                    in
-                    [ httpStatusMarkup response.raw
-                    , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
-                    , httpRawResponseMarkup response.raw
-                    ]
+                    responseMarkup response
     in
     div []
         [ Html.form [ class "UrlForm", onSubmit Msg.Submit, action "javascript:void(0)" ]
@@ -233,7 +239,7 @@ view model =
                 []
             , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
             ]
-        , div [ class "Result" ] responseMarkup
+        , div [ class "Result" ] [ responseView ]
         ]
 
 
