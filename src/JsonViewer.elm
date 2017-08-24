@@ -35,14 +35,17 @@ import Set
 -- Indentation in pixels when rendering a nested structure
 
 
+indent : Int
 indent =
     16
 
 
+arrowRight : String
 arrowRight =
     "▶ "
 
 
+arrowDown : String
 arrowDown =
     "▼ "
 
