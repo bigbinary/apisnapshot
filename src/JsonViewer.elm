@@ -1,4 +1,4 @@
-module JsonViewer exposing (CollapsedNodePaths, JsonView, fromJSVal, view)
+module JsonViewer exposing (CollapsedNodePaths, JsonView, fromJSVal, view, rootNodePath)
 
 {-| JsonViewer transforms the parsed JSON data (`JSVal`) into the
 renderable structure `JsonView`, and provides a renderer for it in
@@ -79,6 +79,11 @@ key is `name`, of the object that is the second element in the root array.
 -}
 type alias NodePath =
     String
+
+
+rootNodePath : NodePath
+rootNodePath =
+    "root"
 
 
 type alias JVCollectionElement =
@@ -166,7 +171,7 @@ fromJSVal_ jsVal parentId =
 
 fromJSVal : JSVal.JSVal -> JsonView
 fromJSVal jsVal =
-    fromJSVal_ jsVal "root"
+    fromJSVal_ jsVal rootNodePath
 
 
 

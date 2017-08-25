@@ -193,7 +193,7 @@ responseMarkup response =
     let
         rootNode =
             { jsonVal = response.json
-            , nodePath = "root"
+            , nodePath = JsonViewer.rootNodePath
             , depth = 0
             , collapsedNodePaths = response.collapsedNodePaths
             }
