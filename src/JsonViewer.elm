@@ -73,7 +73,7 @@ when rendering the node.
 This is guaranteed to be unique as it encodes the entire path
 from the root to itself.
 
-For example `root-2-name` points to the value whose
+For example `root.2.name` points to the value whose
 key is `name`, of the object that is the second element in the root array.
 
 -}
@@ -119,7 +119,7 @@ mapArrayElements jsValsList parentId =
         (\id jsValElement ->
             let
                 nodePath =
-                    parentId ++ "-" ++ toString id
+                    parentId ++ "." ++ toString id
             in
             ( nodePath, toString id, fromJSVal_ jsValElement nodePath )
         )
@@ -132,7 +132,7 @@ mapObjectElements jsValsList parentId =
         (\( key, jsVal ) ->
             let
                 nodePath =
-                    parentId ++ "-" ++ key
+                    parentId ++ "." ++ key
             in
             ( nodePath, key, fromJSVal_ jsVal nodePath )
         )
