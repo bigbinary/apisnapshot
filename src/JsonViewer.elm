@@ -1,4 +1,4 @@
-module JsonViewer exposing (CollapsedNodes, JsonView, fromJSVal, view)
+module JsonViewer exposing (CollapsedNodePaths, JsonView, fromJSVal, view)
 
 {-| JsonViewer transforms the parsed JSON data (`JSVal`) into the
 renderable structure `JsonView`, and provides a renderer for it in
@@ -51,10 +51,10 @@ arrowDown =
     "▼ "
 
 
-{-| Set of all collapsed nodes
+{-| Set of absolute paths of all collapsed nodes
 -}
-type alias CollapsedNodes =
-    Set.Set String
+type alias CollapsedNodePaths =
+    Set.Set NodePath
 
 
 {-| The key to render for each collection item.
@@ -103,7 +103,7 @@ type JsonView
 
 type alias Node =
     { depth : Int
-    , collapsedNodes : CollapsedNodes
+    , collapsedNodePaths : CollapsedNodePaths
     , nodePath : NodePath
     , jsonVal : JsonView
     }
@@ -187,11 +187,11 @@ Does not render anything for non-collections.
 -}
 firstSummaryLine node =
     let
-        { jsonVal, collapsedNodes, nodePath } =
+        { jsonVal, collapsedNodePaths, nodePath } =
             node
 
         isCollapsed =
-            Set.member nodePath collapsedNodes
+            Set.member nodePath collapsedNodePaths
 
         render collection caption =
             span
@@ -234,11 +234,11 @@ collectionItemView parentNode ( nodePath, elementKey, jsonVal ) =
 collectionView : Node -> JVCollection -> String -> Html Msg.Msg
 collectionView parentNode collection caption =
     let
-        { collapsedNodes, depth, nodePath } =
+        { collapsedNodePaths, depth, nodePath } =
             parentNode
 
         isCollapsed =
-            Set.member nodePath collapsedNodes
+            Set.member nodePath collapsedNodePaths
     in
     if isCollapsed then
         Html.text ""
