@@ -118,8 +118,8 @@ type alias Node =
 ---- Construct a JsonView from plain JSVal ----
 
 
-mapArrayElements : List JSVal.JSVal -> String -> List JVCollectionElement
 mapArrayElements jsValsList parentId =
+mapArrayElements : List JSVal.JSVal -> NodePath -> List JVCollectionElement
     List.indexedMap
         (\id jsValElement ->
             let
@@ -131,8 +131,8 @@ mapArrayElements jsValsList parentId =
         jsValsList
 
 
-mapObjectElements : List ( ElementKey, JSVal.JSVal ) -> String -> List JVCollectionElement
 mapObjectElements jsValsList parentId =
+mapObjectElements : List ( ElementKey, JSVal.JSVal ) -> NodePath -> List JVCollectionElement
     List.map
         (\( key, jsVal ) ->
             let
