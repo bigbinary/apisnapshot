@@ -193,7 +193,7 @@ responseMarkup response =
     let
         rootNode =
             { jsonVal = response.json
-            , uniqueId = "root"
+            , nodePath = "root"
             , depth = 0
             , collapsedNodes = response.collapsedNodes
             }

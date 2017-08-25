@@ -10,9 +10,10 @@ unique path to every element, and also transforms both objects and arrays
 into a homogeneous collection type so that they can be rendered with the
 same code.
 
-Having a uniqueId makes it possible to refer unambiguously to any value
-in the Json, which is needed since we don't have object references in
-value-based programming.
+Having a unique path makes it possible to refer unambiguously to any
+value in the JSON, which is needed since we don't have object references in
+value-based programming. Such an unique path can be used for example,
+to maintain a list of collapsed nodes.
 
 
 # Usage
@@ -63,25 +64,27 @@ type alias ElementKey =
     String
 
 
-{-| Unique string ID for every element in the JSON.
+{-| Unique absolute path for every element in the JSON.
 
 This is required so that we can record whether a specific node
 is expanded or collapsed in the Collapsed set, and seek it out
 when rendering the node.
 
-This key is guaranteed to be unique as it encodes the entire path
-from the root to itself. For example `root-2-name` points to the value whose
+This is guaranteed to be unique as it encodes the entire path
+from the root to itself.
+
+For example `root-2-name` points to the value whose
 key is `name`, of the object that is the second element in the root array.
 
 -}
-type alias UniqueId =
+type alias NodePath =
     String
 
 
 type alias JVCollectionElement =
     -- A collection element could belong to either an Object or an Array.
     -- For objects, their `ElementKey` is the key itself, and for arrays it is the element index.
-    ( UniqueId, ElementKey, JsonView )
+    ( NodePath, ElementKey, JsonView )
 
 
 type alias JVCollection =
@@ -101,7 +104,7 @@ type JsonView
 type alias Node =
     { depth : Int
     , collapsedNodes : CollapsedNodes
-    , uniqueId : UniqueId
+    , nodePath : NodePath
     , jsonVal : JsonView
     }
 
@@ -115,10 +118,10 @@ mapArrayElements jsValsList parentId =
     List.indexedMap
         (\id jsValElement ->
             let
-                uniqueId =
+                nodePath =
                     parentId ++ "-" ++ toString id
             in
-            ( uniqueId, toString id, fromJSVal_ jsValElement uniqueId )
+            ( nodePath, toString id, fromJSVal_ jsValElement nodePath )
         )
         jsValsList
 
@@ -128,10 +131,10 @@ mapObjectElements jsValsList parentId =
     List.map
         (\( key, jsVal ) ->
             let
-                uniqueId =
+                nodePath =
                     parentId ++ "-" ++ key
             in
-            ( uniqueId, key, fromJSVal_ jsVal uniqueId )
+            ( nodePath, key, fromJSVal_ jsVal nodePath )
         )
         jsValsList
 
@@ -184,16 +187,16 @@ Does not render anything for non-collections.
 -}
 firstSummaryLine node =
     let
-        { jsonVal, collapsedNodes, uniqueId } =
+        { jsonVal, collapsedNodes, nodePath } =
             node
 
         isCollapsed =
-            Set.member uniqueId collapsedNodes
+            Set.member nodePath collapsedNodes
 
         render collection caption =
             span
                 [ class "JsonView__collapsible"
-                , onClick (Msg.ToggleJsonCollectionView uniqueId)
+                , onClick (Msg.ToggleJsonCollectionView nodePath)
                 ]
                 [ if isCollapsed then
                     text arrowRight
@@ -214,10 +217,10 @@ firstSummaryLine node =
 
 
 collectionItemView : Node -> JVCollectionElement -> Html Msg.Msg
-collectionItemView parentNode ( uniqueId, elementKey, jsonVal ) =
+collectionItemView parentNode ( nodePath, elementKey, jsonVal ) =
     let
         node =
-            { parentNode | jsonVal = jsonVal, uniqueId = uniqueId }
+            { parentNode | jsonVal = jsonVal, nodePath = nodePath }
     in
     li [ class "JsonView__collectionItem" ]
         [ span
@@ -231,11 +234,11 @@ collectionItemView parentNode ( uniqueId, elementKey, jsonVal ) =
 collectionView : Node -> JVCollection -> String -> Html Msg.Msg
 collectionView parentNode collection caption =
     let
-        { collapsedNodes, depth, uniqueId } =
+        { collapsedNodes, depth, nodePath } =
             parentNode
 
         isCollapsed =
-            Set.member uniqueId collapsedNodes
+            Set.member nodePath collapsedNodes
     in
     if isCollapsed then
         Html.text ""
