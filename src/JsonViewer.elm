@@ -121,12 +121,12 @@ type alias Node =
 mapArrayElements : List JSVal.JSVal -> NodePath -> List JVCollectionElement
 mapArrayElements jsValsList parentNodePath =
     List.indexedMap
-        (\id jsValElement ->
+        (\index jsValElement ->
             let
                 nodePath =
-                    parentNodePath ++ "." ++ toString id
+                    parentNodePath ++ "." ++ toString index
             in
-            ( nodePath, toString id, fromJSVal_ jsValElement nodePath )
+            ( nodePath, toString index, fromJSVal_ jsValElement nodePath )
         )
         jsValsList
 
