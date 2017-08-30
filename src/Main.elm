@@ -16,7 +16,7 @@ import Set
 
 type alias Response =
     { raw : Http.Response String
-    , collapsedNodes : JsonViewer.CollapsedNodes
+    , collapsedNodePaths : JsonViewer.CollapsedNodePaths
     , json : JsonViewer.JsonView
     }
 
@@ -90,7 +90,7 @@ updateModelWithResponse model httpResponse =
         | pageState =
             Loaded
                 { raw = httpResponse
-                , collapsedNodes = Set.empty
+                , collapsedNodePaths = Set.empty
                 , json =
                     JsonViewer.fromJSVal (parseResponseBodyToJSVal httpResponse)
                 }
@@ -128,13 +128,13 @@ update msg model =
             ( case model.pageState of
                 Loaded response ->
                     let
-                        collapsedNodes =
-                            response.collapsedNodes
+                        collapsedNodePaths =
+                            response.collapsedNodePaths
                     in
-                    if Set.member id collapsedNodes then
-                        { model | pageState = Loaded { response | collapsedNodes = Set.remove id collapsedNodes } }
+                    if Set.member id collapsedNodePaths then
+                        { model | pageState = Loaded { response | collapsedNodePaths = Set.remove id collapsedNodePaths } }
                     else
-                        { model | pageState = Loaded { response | collapsedNodes = Set.insert id collapsedNodes } }
+                        { model | pageState = Loaded { response | collapsedNodePaths = Set.insert id collapsedNodePaths } }
 
                 _ ->
                     model
@@ -193,9 +193,9 @@ responseMarkup response =
     let
         rootNode =
             { jsonVal = response.json
-            , uniqueId = "root"
+            , nodePath = JsonViewer.rootNodePath
             , depth = 0
-            , collapsedNodes = response.collapsedNodes
+            , collapsedNodePaths = response.collapsedNodePaths
             }
     in
     div []
