@@ -20,13 +20,57 @@ img {
 }
 
 .UrlForm {
-    margin: 3em;
+    margin: 2em 3em 1em 3em;
     font-size: 20px;
 }
 
 .UrlForm__input {
     width: 60%;
-    margin-right: 3em;
+    margin-right: 1em;
+}
+
+.UrlForm__moreActionsDropdown {
+    margin-right: 1em;
+}
+
+.RequestParameters {
+    margin: 0 2em;
+    padding: 2em;
+}
+
+.RequestParameters__heading {
+    font-size: 0.8rem;
+    color: #aaa;
+    text-transform: uppercase;
+}
+
+.RequestParameters__add {
+    margin-left: 10em;
+}
+
+.RequestParameters__delete {
+    color: #999;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 5px;
+}
+
+.RequestParameters__delete:hover {
+    color: #000;
+    text-decoration: none;
+}
+
+.RequestParameters ul {
+    list-style-type: none;
+    padding: 0
+}
+
+.RequestParameters li {
+    margin-bottom: 1em;
+}
+
+.RequestParameters input {
+    margin-right: 2em;
 }
 
 .Result {

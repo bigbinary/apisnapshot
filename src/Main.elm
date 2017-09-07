@@ -9,6 +9,8 @@ import Json.Decode
 import JsonViewer
 import Msg exposing (Msg)
 import Set
+import Array
+import Array.Extra
 
 
 ---- MODEL ----
@@ -28,19 +30,45 @@ type PageState
     | Loaded Response
 
 
+type alias RequestParameter =
+    { name : String
+    , value : String
+    }
+
+
+type alias RequestParameters =
+    Array.Array RequestParameter
+
+
 type alias Model =
     { url : String
+    , requestParameters : RequestParameters
     , pageState : PageState
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { url = "https://swapi.co/api/people/1/", pageState = Empty }, Cmd.none )
+    ( { url = "https://swapi.co/api/people/1/"
+      , requestParameters = Array.empty
+      , pageState = Empty
+      }
+    , Cmd.none
+    )
 
 
 
 ---- UPDATE ----
+
+
+urlWithEncodedParameters : String -> RequestParameters -> String
+urlWithEncodedParameters url requestParameters =
+    requestParameters
+                |> Array.filter (\(parameter) -> parameter.name /= "" )
+                |> Array.map (\(parameter) -> Http.encodeUri parameter.name ++ "=" ++ Http.encodeUri parameter.value)
+                |> Array.toList
+                |> String.join "&"
+                |> (++) (url ++ "?")
 
 
 hitUrl : String -> Cmd Msg
@@ -116,7 +144,7 @@ update msg model =
             )
 
         Msg.Submit ->
-            ( { model | pageState = Loading }, hitUrl model.url )
+            ( { model | pageState = Loading }, hitUrl ( urlWithEncodedParameters model.url model.requestParameters ) )
 
         Msg.ResponseAvailable (Ok value) ->
             ( updateModelWithResponse model value, Cmd.none )
@@ -140,7 +168,57 @@ update msg model =
                     model
             , Cmd.none
             )
+        Msg.MoreActionsDropdownChange selectedOption ->
+            case selectedOption of
+                "Add Parameter" ->
+                    update Msg.AddRequestParameter model
 
+                _ ->
+                    ( model, Cmd.none )
+
+        Msg.AddRequestParameter ->
+            ( { model | requestParameters = Array.push { name = "", value = "" } model.requestParameters }
+            , Cmd.none
+            )
+
+        Msg.ChangeRequestParameterName index newName ->
+            let
+                item =
+                    Array.get index model.requestParameters
+
+                updatedItem =
+                    case item of
+                        Just item_ ->
+                            { item_ | name = newName }
+
+                        Nothing ->
+                            { name = "", value = "" }
+
+                updatedRequestedParameters =
+                    Array.set index updatedItem model.requestParameters
+            in
+            ( { model | requestParameters = updatedRequestedParameters }, Cmd.none )
+
+        Msg.ChangeRequestParameterValue index newValue ->
+            let
+                item =
+                    Array.get index model.requestParameters
+
+                updatedItem =
+                    case item of
+                        Just item_ ->
+                            { item_ | value = newValue }
+
+                        Nothing ->
+                            { name = "", value = "" }
+
+                updatedRequestedParameters =
+                    Array.set index updatedItem model.requestParameters
+            in
+            ( { model | requestParameters = updatedRequestedParameters }, Cmd.none )
+
+        Msg.DeleteRequestParameter index ->
+            ( { model | requestParameters = Array.Extra.removeAt index model.requestParameters } , Cmd.none )
 
 
 ---- VIEW ----
@@ -209,6 +287,42 @@ responseMarkup response =
 ---- VIEW ----
 
 
+requestParameterItemView : Int -> RequestParameter -> Html Msg.Msg
+requestParameterItemView index requestParameter =
+    li [ attribute "data-param-id" (toString index) ]
+        [ input
+            [ type_ "text"
+            , placeholder "Enter Name"
+            , value requestParameter.name
+            , onInput (Msg.ChangeRequestParameterName index)
+            ]
+            []
+        , input
+            [ type_ "text"
+            , placeholder "Enter Value"
+            , value requestParameter.value
+            , onInput (Msg.ChangeRequestParameterValue index)
+            ]
+            []
+        , a [ href "javascript:void(0)"
+            , class "RequestParameters__delete"
+            , onClick (Msg.DeleteRequestParameter index)
+            ]
+            [ text "×" ]
+        ]
+
+
+requestParameterCollectionView : List ( Int, RequestParameter ) -> Html Msg
+requestParameterCollectionView indexedRequestParameters =
+    ul []
+        (List.map
+            (\( index, parameter ) ->
+                (requestParameterItemView index parameter)
+            )
+            indexedRequestParameters
+        )
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -225,6 +339,20 @@ view model =
 
                 Loaded response ->
                     responseMarkup response
+
+        requestParametersView =
+            if Array.isEmpty model.requestParameters then
+                text ""
+            else
+                div []
+                    [ h6 []
+                        [ span [ class "RequestParameters__heading" ]
+                            [ text "Request Parameters" ]
+                        , a [ href "javascript:void(0)", class "RequestParameters__add", onClick Msg.AddRequestParameter ]
+                            [ text "Add Parameter" ]
+                        ]
+                    , requestParameterCollectionView (Array.toIndexedList model.requestParameters)
+                    ]
     in
     div []
         [ Html.form [ class "UrlForm", onSubmit Msg.Submit, action "javascript:void(0)" ]
@@ -237,8 +365,17 @@ view model =
                 , value model.url
                 ]
                 []
+            , select
+                [ class "UrlForm__moreActionsDropdown"
+                , value "More"
+                , on "change" (Json.Decode.map Msg.MoreActionsDropdownChange targetValue)
+                ]
+                [ option [ value "More" ] [ text "More" ]
+                , option [ value "Add Parameter" ] [ text "Add Parameter" ]
+                ]
             , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
             ]
+        , div [ class "RequestParameters" ] [ requestParametersView ]
         , div [ class "Result" ] [ responseView ]
         ]
 
