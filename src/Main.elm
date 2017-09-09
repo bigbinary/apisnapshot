@@ -10,7 +10,7 @@ import JsonViewer
 import Msg exposing (Msg)
 import Set
 import Array
-import Array.Extra
+import RequestParameters exposing (..)
 
 
 ---- MODEL ----
@@ -30,16 +30,6 @@ type PageState
     | Loaded Response
 
 
-type alias RequestParameter =
-    { name : String
-    , value : String
-    }
-
-
-type alias RequestParameters =
-    Array.Array RequestParameter
-
-
 type alias Model =
     { url : String
     , requestParameters : RequestParameters
@@ -50,7 +40,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { url = "https://swapi.co/api/people/1/"
-      , requestParameters = Array.empty
+      , requestParameters = empty
       , pageState = Empty
       }
     , Cmd.none
@@ -177,48 +167,22 @@ update msg model =
                     ( model, Cmd.none )
 
         Msg.AddRequestParameter ->
-            ( { model | requestParameters = Array.push { name = "", value = "" } model.requestParameters }
+            ( { model | requestParameters = pushBlank model.requestParameters }
             , Cmd.none
             )
 
         Msg.ChangeRequestParameterName index newName ->
-            let
-                item =
-                    Array.get index model.requestParameters
-
-                updatedItem =
-                    case item of
-                        Just item_ ->
-                            { item_ | name = newName }
-
-                        Nothing ->
-                            { name = "", value = "" }
-
-                updatedRequestedParameters =
-                    Array.set index updatedItem model.requestParameters
-            in
-            ( { model | requestParameters = updatedRequestedParameters }, Cmd.none )
+            ( { model | requestParameters = updateName index newName model.requestParameters }
+            , Cmd.none
+            )
 
         Msg.ChangeRequestParameterValue index newValue ->
-            let
-                item =
-                    Array.get index model.requestParameters
-
-                updatedItem =
-                    case item of
-                        Just item_ ->
-                            { item_ | value = newValue }
-
-                        Nothing ->
-                            { name = "", value = "" }
-
-                updatedRequestedParameters =
-                    Array.set index updatedItem model.requestParameters
-            in
-            ( { model | requestParameters = updatedRequestedParameters }, Cmd.none )
+            ( { model | requestParameters = updateValue index newValue model.requestParameters }
+            , Cmd.none
+            )
 
         Msg.DeleteRequestParameter index ->
-            ( { model | requestParameters = Array.Extra.removeAt index model.requestParameters } , Cmd.none )
+            ( { model | requestParameters = remove index model.requestParameters } , Cmd.none )
 
 
 ---- VIEW ----
@@ -287,42 +251,6 @@ responseMarkup response =
 ---- VIEW ----
 
 
-requestParameterItemView : Int -> RequestParameter -> Html Msg.Msg
-requestParameterItemView index requestParameter =
-    li [ attribute "data-param-id" (toString index) ]
-        [ input
-            [ type_ "text"
-            , placeholder "Enter Name"
-            , value requestParameter.name
-            , onInput (Msg.ChangeRequestParameterName index)
-            ]
-            []
-        , input
-            [ type_ "text"
-            , placeholder "Enter Value"
-            , value requestParameter.value
-            , onInput (Msg.ChangeRequestParameterValue index)
-            ]
-            []
-        , a [ href "javascript:void(0)"
-            , class "RequestParameters__delete"
-            , onClick (Msg.DeleteRequestParameter index)
-            ]
-            [ text "×" ]
-        ]
-
-
-requestParameterCollectionView : List ( Int, RequestParameter ) -> Html Msg
-requestParameterCollectionView indexedRequestParameters =
-    ul []
-        (List.map
-            (\( index, parameter ) ->
-                (requestParameterItemView index parameter)
-            )
-            indexedRequestParameters
-        )
-
-
 view : Model -> Html Msg
 view model =
     let
@@ -351,7 +279,7 @@ view model =
                         , a [ href "javascript:void(0)", class "RequestParameters__add", onClick Msg.AddRequestParameter ]
                             [ text "Add Parameter" ]
                         ]
-                    , requestParameterCollectionView (Array.toIndexedList model.requestParameters)
+                    , RequestParameters.view model.requestParameters
                     ]
     in
     div []
