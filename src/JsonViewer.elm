@@ -126,7 +126,7 @@ mapArrayElements jsValsList parentNodePath =
                 nodePath =
                     parentNodePath ++ "." ++ toString index
             in
-            ( nodePath, toString index, fromJSVal_ jsValElement nodePath )
+                ( nodePath, toString index, fromJSVal_ jsValElement nodePath )
         )
         jsValsList
 
@@ -139,7 +139,7 @@ mapObjectElements jsValsList parentNodePath =
                 nodePath =
                     parentNodePath ++ "." ++ key
             in
-            ( nodePath, key, fromJSVal_ jsVal nodePath )
+                ( nodePath, key, fromJSVal_ jsVal nodePath )
         )
         jsValsList
 
@@ -210,15 +210,15 @@ firstSummaryLine node =
                 , text (caption ++ " (" ++ toString (List.length collection) ++ ")")
                 ]
     in
-    case jsonVal of
-        JVArray collection ->
-            render collection "Array"
+        case jsonVal of
+            JVArray collection ->
+                render collection "Array"
 
-        JVObject collection ->
-            render collection "Object"
+            JVObject collection ->
+                render collection "Object"
 
-        _ ->
-            Html.text ""
+            _ ->
+                Html.text ""
 
 
 collectionItemView : Node -> JVCollectionElement -> Html Msg.Msg
@@ -227,13 +227,13 @@ collectionItemView parentNode ( nodePath, elementKey, jsonVal ) =
         node =
             { parentNode | jsonVal = jsonVal, nodePath = nodePath }
     in
-    li [ class "JsonView__collectionItem" ]
-        [ span
-            [ class "JsonView__propertyKey" ]
-            [ text (elementKey ++ ":") ]
-        , firstSummaryLine node
-        , view node
-        ]
+        li [ class "JsonView__collectionItem" ]
+            [ span
+                [ class "JsonView__propertyKey" ]
+                [ text (elementKey ++ ":") ]
+            , firstSummaryLine node
+            , view node
+            ]
 
 
 collectionView : Node -> JVCollection -> String -> Html Msg.Msg
@@ -245,17 +245,17 @@ collectionView parentNode collection caption =
         isCollapsed =
             Set.member nodePath collapsedNodePaths
     in
-    if isCollapsed then
-        Html.text ""
-    else
-        ol
-            [ class "JsonView__collectionItemsList"
-            , style [ ( "paddingLeft", toString ((depth + 1) * indent) ++ "px" ) ]
-            ]
-            (List.map
-                (collectionItemView { parentNode | depth = depth + 1 })
-                collection
-            )
+        if isCollapsed then
+            Html.text ""
+        else
+            ol
+                [ class "JsonView__collectionItemsList"
+                , style [ ( "paddingLeft", toString ((depth + 1) * indent) ++ "px" ) ]
+                ]
+                (List.map
+                    (collectionItemView { parentNode | depth = depth + 1 })
+                    collection
+                )
 
 
 view : Node -> Html Msg.Msg
@@ -281,23 +281,23 @@ view node =
                 rendered =
                     collectionView node array "Array"
             in
-            if node.depth == 0 then
-                li [ class "JsonView__collectionItem" ]
-                    [ firstSummaryLine node
-                    , rendered
-                    ]
-            else
-                rendered
+                if node.depth == 0 then
+                    li [ class "JsonView__collectionItem" ]
+                        [ firstSummaryLine node
+                        , rendered
+                        ]
+                else
+                    rendered
 
         JVObject object ->
             let
                 rendered =
                     collectionView node object "Object"
             in
-            if node.depth == 0 then
-                li [ class "JsonView__collectionItem" ]
-                    [ firstSummaryLine node
-                    , rendered
-                    ]
-            else
-                rendered
+                if node.depth == 0 then
+                    li [ class "JsonView__collectionItem" ]
+                        [ firstSummaryLine node
+                        , rendered
+                        ]
+                else
+                    rendered

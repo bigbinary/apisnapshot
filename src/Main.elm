@@ -54,11 +54,11 @@ init =
 urlWithEncodedParameters : String -> RequestParameters -> String
 urlWithEncodedParameters url requestParameters =
     requestParameters
-                |> Array.filter (\(parameter) -> parameter.name /= "" )
-                |> Array.map (\(parameter) -> Http.encodeUri parameter.name ++ "=" ++ Http.encodeUri parameter.value)
-                |> Array.toList
-                |> String.join "&"
-                |> (++) (url ++ "?")
+        |> Array.filter (\parameter -> parameter.name /= "")
+        |> Array.map (\parameter -> Http.encodeUri parameter.name ++ "=" ++ Http.encodeUri parameter.value)
+        |> Array.toList
+        |> String.join "&"
+        |> (++) (url ++ "?")
 
 
 hitUrl : String -> Cmd Msg
@@ -67,7 +67,7 @@ hitUrl url =
         cmd =
             Http.send Msg.ResponseAvailable (buildRequest url)
     in
-    cmd
+        cmd
 
 
 buildRequest : String -> Http.Request (Http.Response String)
@@ -94,12 +94,12 @@ parseResponseBodyToJSVal httpResponse =
         result =
             Json.Decode.decodeString JSVal.decoder httpResponse.body
     in
-    case result of
-        Ok jsonValue ->
-            jsonValue
+        case result of
+            Ok jsonValue ->
+                jsonValue
 
-        Err err ->
-            JSVal.JSString ("Error parsing the body. " ++ err)
+            Err err ->
+                JSVal.JSString ("Error parsing the body. " ++ err)
 
 
 updateModelWithResponse : Model -> Http.Response String -> Model
@@ -134,7 +134,7 @@ update msg model =
             )
 
         Msg.Submit ->
-            ( { model | pageState = Loading }, hitUrl ( urlWithEncodedParameters model.url model.requestParameters ) )
+            ( { model | pageState = Loading }, hitUrl (urlWithEncodedParameters model.url model.requestParameters) )
 
         Msg.ResponseAvailable (Ok value) ->
             ( updateModelWithResponse model value, Cmd.none )
@@ -149,15 +149,16 @@ update msg model =
                         collapsedNodePaths =
                             response.collapsedNodePaths
                     in
-                    if Set.member id collapsedNodePaths then
-                        { model | pageState = Loaded { response | collapsedNodePaths = Set.remove id collapsedNodePaths } }
-                    else
-                        { model | pageState = Loaded { response | collapsedNodePaths = Set.insert id collapsedNodePaths } }
+                        if Set.member id collapsedNodePaths then
+                            { model | pageState = Loaded { response | collapsedNodePaths = Set.remove id collapsedNodePaths } }
+                        else
+                            { model | pageState = Loaded { response | collapsedNodePaths = Set.insert id collapsedNodePaths } }
 
                 _ ->
                     model
             , Cmd.none
             )
+
         Msg.MoreActionsDropdownChange selectedOption ->
             case selectedOption of
                 "Add Parameter" ->
@@ -182,7 +183,8 @@ update msg model =
             )
 
         Msg.DeleteRequestParameter index ->
-            ( { model | requestParameters = remove index model.requestParameters } , Cmd.none )
+            ( { model | requestParameters = remove index model.requestParameters }, Cmd.none )
+
 
 
 ---- VIEW ----
@@ -240,11 +242,11 @@ responseMarkup response =
             , collapsedNodePaths = response.collapsedNodePaths
             }
     in
-    div []
-        [ httpStatusMarkup response.raw
-        , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
-        , httpRawResponseMarkup response.raw
-        ]
+        div []
+            [ httpStatusMarkup response.raw
+            , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
+            , httpRawResponseMarkup response.raw
+            ]
 
 
 
@@ -260,7 +262,7 @@ view model =
                     text ""
 
                 Loading ->
-                    p [class "Main__loading"] [text "Loading..."]
+                    p [ class "Main__loading" ] [ text "Loading..." ]
 
                 Error error ->
                     errorMarkup error
@@ -282,30 +284,30 @@ view model =
                     , RequestParameters.view model.requestParameters
                     ]
     in
-    div []
-        [ Html.form [ class "UrlForm", onSubmit Msg.Submit, action "javascript:void(0)" ]
-            [ input
-                [ class "UrlForm__input"
-                , name "url"
-                , type_ "text"
-                , placeholder "Enter url here"
-                , onInput Msg.ChangeUrl
-                , value model.url
+        div []
+            [ Html.form [ class "UrlForm", onSubmit Msg.Submit, action "javascript:void(0)" ]
+                [ input
+                    [ class "UrlForm__input"
+                    , name "url"
+                    , type_ "text"
+                    , placeholder "Enter url here"
+                    , onInput Msg.ChangeUrl
+                    , value model.url
+                    ]
+                    []
+                , select
+                    [ class "UrlForm__moreActionsDropdown"
+                    , value "More"
+                    , on "change" (Json.Decode.map Msg.MoreActionsDropdownChange targetValue)
+                    ]
+                    [ option [ value "More" ] [ text "More" ]
+                    , option [ value "Add Parameter" ] [ text "Add Parameter" ]
+                    ]
+                , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
                 ]
-                []
-            , select
-                [ class "UrlForm__moreActionsDropdown"
-                , value "More"
-                , on "change" (Json.Decode.map Msg.MoreActionsDropdownChange targetValue)
-                ]
-                [ option [ value "More" ] [ text "More" ]
-                , option [ value "Add Parameter" ] [ text "Add Parameter" ]
-                ]
-            , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
+            , div [ class "RequestParameters" ] [ requestParametersView ]
+            , div [ class "Result" ] [ responseView ]
             ]
-        , div [ class "RequestParameters" ] [ requestParametersView ]
-        , div [ class "Result" ] [ responseView ]
-        ]
 
 
 
