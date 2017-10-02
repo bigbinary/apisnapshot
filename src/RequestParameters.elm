@@ -14,7 +14,7 @@ import Array.Extra
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Msg exposing (Msg)
+import Msgs exposing (Msg)
 
 
 -- TYPES --
@@ -109,27 +109,27 @@ remove index requestParameters =
 -- VIEW --
 
 
-itemView : Int -> RequestParameter -> Html Msg.Msg
+itemView : Int -> RequestParameter -> Html Msg
 itemView index requestParameter =
     li [ attribute "data-param-id" (toString index) ]
         [ input
             [ type_ "text"
             , placeholder "Enter Name"
             , value requestParameter.name
-            , onInput (Msg.ChangeRequestParameterName index)
+            , onInput (Msgs.ChangeRequestParameterName index)
             ]
             []
         , input
             [ type_ "text"
             , placeholder "Enter Value"
             , value requestParameter.value
-            , onInput (Msg.ChangeRequestParameterValue index)
+            , onInput (Msgs.ChangeRequestParameterValue index)
             ]
             []
         , a
             [ href "javascript:void(0)"
             , class "RequestParameters__delete"
-            , onClick (Msg.DeleteRequestParameter index)
+            , onClick (Msgs.DeleteRequestParameter index)
             ]
             [ text "×" ]
         ]

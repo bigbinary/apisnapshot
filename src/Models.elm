@@ -1,0 +1,26 @@
+module Models exposing (..)
+
+import Http
+import JsonViewer
+import RequestParameters exposing (RequestParameters)
+
+
+type alias Response =
+    { raw : Http.Response String
+    , collapsedNodePaths : JsonViewer.CollapsedNodePaths
+    , json : JsonViewer.JsonView
+    }
+
+
+type PageState
+    = Empty
+    | Loading
+    | Error Http.Error
+    | Loaded Response
+
+
+type alias Model =
+    { url : String
+    , requestParameters : RequestParameters
+    , pageState : PageState
+    }

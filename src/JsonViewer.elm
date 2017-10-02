@@ -29,7 +29,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import JSVal
-import Msg
+import Msgs exposing (Msg)
 import Set
 
 
@@ -201,7 +201,7 @@ firstSummaryLine node =
         render collection caption =
             span
                 [ class "JsonView__collapsible"
-                , onClick (Msg.ToggleJsonCollectionView nodePath)
+                , onClick (Msgs.ToggleJsonCollectionView nodePath)
                 ]
                 [ if isCollapsed then
                     text arrowRight
@@ -221,7 +221,7 @@ firstSummaryLine node =
                 Html.text ""
 
 
-collectionItemView : Node -> JVCollectionElement -> Html Msg.Msg
+collectionItemView : Node -> JVCollectionElement -> Html Msg
 collectionItemView parentNode ( nodePath, elementKey, jsonVal ) =
     let
         node =
@@ -236,7 +236,7 @@ collectionItemView parentNode ( nodePath, elementKey, jsonVal ) =
             ]
 
 
-collectionView : Node -> JVCollection -> String -> Html Msg.Msg
+collectionView : Node -> JVCollection -> String -> Html Msg
 collectionView parentNode collection caption =
     let
         { collapsedNodePaths, depth, nodePath } =
@@ -258,7 +258,7 @@ collectionView parentNode collection caption =
                 )
 
 
-view : Node -> Html Msg.Msg
+view : Node -> Html Msg
 view node =
     case node.jsonVal of
         JVString string ->
