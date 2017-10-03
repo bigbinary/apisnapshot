@@ -1,6 +1,7 @@
 module Models exposing (..)
 
 import Http
+import HttpMethods exposing (HttpMethod)
 import JsonViewer
 import RequestParameters exposing (RequestParameters)
 
@@ -21,6 +22,7 @@ type PageState
 
 type alias Model =
     { url : String
+    , httpMethod : HttpMethod
     , requestParameters : RequestParameters
     , pageState : PageState
     }

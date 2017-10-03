@@ -5,11 +5,27 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
+import HttpMethods exposing (HttpMethod, avaialableHttpMethodsString)
 import Json.Decode
 import JsonViewer
 import Models exposing (..)
 import Msgs exposing (Msg)
 import RequestParameters
+
+
+httpMethodDropdownOption : String -> Html msg
+httpMethodDropdownOption httpMethodString =
+    option [ value httpMethodString ] [ text httpMethodString ]
+
+
+httpMethodDropdown : HttpMethod -> Html Msg
+httpMethodDropdown selectedHttpMethod =
+    select
+        [ class "UrlForm__httpMethodsDropdown"
+        , value <| HttpMethods.toString selectedHttpMethod
+        , on "change" <| Json.Decode.map Msgs.HttpMethodsDropdownChange targetValue
+        ]
+        (List.map httpMethodDropdownOption avaialableHttpMethodsString)
 
 
 httpStatusMarkup : Http.Response String -> Html msg
@@ -104,7 +120,8 @@ view model =
     in
         div []
             [ Html.form [ class "UrlForm", onSubmit Msgs.Submit, action "javascript:void(0)" ]
-                [ input
+                [ httpMethodDropdown model.httpMethod
+                , input
                     [ class "UrlForm__input"
                     , name "url"
                     , type_ "text"

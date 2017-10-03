@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (program)
+import HttpMethods exposing (HttpMethod(..))
 import Models exposing (PageState(..), Model)
 import Msgs exposing (Msg)
 import RequestParameters exposing (empty)
@@ -11,6 +12,7 @@ import View exposing (view)
 init : ( Model, Cmd Msg )
 init =
     ( { url = "https://swapi.co/api/people/1/"
+      , httpMethod = Get
       , requestParameters = empty
       , pageState = Empty
       }

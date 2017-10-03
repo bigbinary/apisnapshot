@@ -9,6 +9,7 @@ type Msg
     | ResponseAvailable (Result Http.Error (Http.Response String))
     | ToggleJsonCollectionView String
     | MoreActionsDropdownChange String
+    | HttpMethodsDropdownChange String
     | AddRequestParameter
     | ChangeRequestParameterName Int String
     | ChangeRequestParameterValue Int String

@@ -2,6 +2,7 @@ module Update exposing (update)
 
 import Array
 import Http
+import HttpMethods exposing (HttpMethod, parse, toString)
 import Json.Decode
 import JsonViewer
 import JSVal
@@ -21,19 +22,22 @@ urlWithEncodedParameters url requestParameters =
         |> (++) (url ++ "?")
 
 
-hitUrl : String -> Cmd Msg
-hitUrl url =
+requestCommand : Model -> Cmd Msg
+requestCommand model =
     let
-        cmd =
-            Http.send Msgs.ResponseAvailable (buildRequest url)
+        encodedUrl =
+            urlWithEncodedParameters model.url model.requestParameters
+
+        request =
+            buildRequest encodedUrl model.httpMethod
     in
-        cmd
+        Http.send Msgs.ResponseAvailable request
 
 
-buildRequest : String -> Http.Request (Http.Response String)
-buildRequest url =
+buildRequest : String -> HttpMethod -> Http.Request (Http.Response String)
+buildRequest url httpMethod =
     Http.request
-        { method = "GET"
+        { method = HttpMethods.toString httpMethod
         , headers = []
         , url = url
         , body = Http.emptyBody
@@ -94,7 +98,7 @@ update msg model =
             )
 
         Msgs.Submit ->
-            ( { model | pageState = Loading }, hitUrl (urlWithEncodedParameters model.url model.requestParameters) )
+            ( { model | pageState = Loading }, requestCommand model )
 
         Msgs.ResponseAvailable (Ok value) ->
             ( updateModelWithResponse model value, Cmd.none )
@@ -144,3 +148,6 @@ update msg model =
 
         Msgs.DeleteRequestParameter index ->
             ( { model | requestParameters = remove index model.requestParameters }, Cmd.none )
+
+        Msgs.HttpMethodsDropdownChange selectedHttpMethodString ->
+            ( { model | httpMethod = parse selectedHttpMethodString }, Cmd.none )
