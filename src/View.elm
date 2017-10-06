@@ -8,6 +8,7 @@ import Http
 import HttpMethods exposing (HttpMethod, avaialableHttpMethodsString)
 import Json.Decode
 import JsonViewer
+import Layout
 import Models exposing (..)
 import Msgs exposing (Msg)
 import RequestParameters
@@ -89,6 +90,7 @@ responseMarkup response =
 
 view : Model -> Html Msg
 view model =
+    div [] [ page model ] |> Layout.embed model
     let
         responseView =
             case model.pageState of
