@@ -16,3 +16,16 @@ type Msg
     | ChangeRequestParameterValue Int String
     | DeleteRequestParameter Int
     | OnLocationChange Location
+    | OnLocalStorageSet String
+    | OnLocalStorageGet String
+    | PreferencesMsg PreferencesMsg
+
+
+type PreferencesMsg
+    = ChangeApiKey String
+    | ChangeAuthDomain String
+    | ChangeDatabaseUrl String
+    | ChangeProjectId String
+    | ChangeStorageBucket String
+    | ChangeMessagingSenderId String
+    | FirebaseConfigSubmit

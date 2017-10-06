@@ -3,8 +3,14 @@ module Models exposing (..)
 import Http
 import HttpMethods exposing (HttpMethod)
 import JsonViewer
+import LocalStorageData exposing (..)
 import RequestParameters exposing (RequestParameters)
 import Router exposing (..)
+
+
+firebaseConfigLocalStorageKey : String
+firebaseConfigLocalStorageKey =
+    "firebaseConfig"
 
 
 type alias Response =
@@ -21,10 +27,22 @@ type PageState
     | Loaded Response
 
 
+type alias FirebaseConfig =
+    { apiKey : String
+    , authDomain : String
+    , databaseURL : String
+    , projectId : String
+    , storageBucket : String
+    , messagingSenderId : String
+    }
+
+
 type alias Model =
     { url : String
     , httpMethod : HttpMethod
     , requestParameters : RequestParameters
     , pageState : PageState
     , route : Route
+    , firebaseConfig : LocalStorageData String FirebaseConfig
+    , dirtyFirebaseConfig : FirebaseConfig
     }
