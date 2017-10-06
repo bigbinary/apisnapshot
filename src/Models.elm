@@ -4,6 +4,7 @@ import Http
 import HttpMethods exposing (HttpMethod)
 import JsonViewer
 import RequestParameters exposing (RequestParameters)
+import Router exposing (..)
 
 
 type alias Response =
@@ -25,4 +26,5 @@ type alias Model =
     , httpMethod : HttpMethod
     , requestParameters : RequestParameters
     , pageState : PageState
+    , route : Route
     }

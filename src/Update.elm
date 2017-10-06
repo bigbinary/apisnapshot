@@ -9,6 +9,7 @@ import JSVal
 import Models exposing (Model, PageState(..))
 import Msgs exposing (Msg)
 import RequestParameters exposing (..)
+import Router exposing (parseLocation)
 import Set
 
 
@@ -151,3 +152,10 @@ update msg model =
 
         Msgs.HttpMethodsDropdownChange selectedHttpMethodString ->
             ( { model | httpMethod = parse selectedHttpMethodString }, Cmd.none )
+
+        Msgs.OnLocationChange location ->
+            let
+                newRoute =
+                    parseLocation location
+            in
+                ( { model | route = newRoute }, Cmd.none )

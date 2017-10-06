@@ -1,6 +1,7 @@
 module Msgs exposing (..)
 
 import Http
+import Navigation exposing (Location)
 
 
 type Msg
@@ -14,3 +15,4 @@ type Msg
     | ChangeRequestParameterName Int String
     | ChangeRequestParameterValue Int String
     | DeleteRequestParameter Int
+    | OnLocationChange Location
