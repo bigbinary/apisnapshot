@@ -18,6 +18,7 @@ initialModel route =
     , error = Nothing
     , httpMethod = Get
     , requestParameters = empty
+    , assertions = empty
     , pageState = Empty
     , route = route
     , firebaseConfig = LocalStorageData.Loading

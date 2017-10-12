@@ -5,6 +5,7 @@ import HttpMethods exposing (HttpMethod)
 import JsonViewer
 import LocalStorageData exposing (..)
 import RequestParameters exposing (RequestParameters)
+import Assertions exposing (Assertions)
 import Router exposing (..)
 
 
@@ -42,6 +43,7 @@ type alias Model =
     , error : Maybe String
     , httpMethod : HttpMethod
     , requestParameters : RequestParameters
+    , assertions : Assertions
     , pageState : PageState
     , route : Route
     , firebaseConfig : LocalStorageData String FirebaseConfig

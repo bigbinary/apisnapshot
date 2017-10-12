@@ -11,6 +11,7 @@ import JsonViewer
 import Models exposing (..)
 import Msgs exposing (Msg)
 import RequestParameters
+import Assertions
 
 
 view : Model -> Html Msg
@@ -43,6 +44,20 @@ view model =
                         ]
                     , RequestParameters.view model.requestParameters
                     ]
+
+        assertionsView =
+            if Array.isEmpty model.assertions then
+                text ""
+            else
+                div []
+                    [ h6 []
+                        [ span [ class "RequestParameters__heading" ]
+                            [ text "Assertions" ]
+                        , a [ href "javascript:void(0)", class "RequestParameters__add", onClick Msgs.AddAssertion ]
+                            [ text "Add Assertion" ]
+                        ]
+                    , Assertions.view model.assertions
+                    ]
     in
         div []
             [ Html.form [ class "UrlForm", onSubmit Msgs.Submit, action "javascript:void(0)" ]
@@ -63,11 +78,13 @@ view model =
                     ]
                     [ option [ value "More" ] [ text "More" ]
                     , option [ value "Add Parameter" ] [ text "Add Parameter" ]
+                    , option [ value "Add Assertion" ] [ text "Add Assertion" ]
                     ]
                 , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
                 ]
             , div [ class "error" ] [ text (Maybe.withDefault "" model.error) ]
             , div [ class "RequestParameters" ] [ requestParametersView ]
+            , div [ class "RequestParameters" ] [ assertionsView ]
             , div [ class "Result" ] [ responseView ]
             ]
 

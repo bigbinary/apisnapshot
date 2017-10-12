@@ -1,5 +1,10 @@
 module Update exposing (update)
 
+import Array
+import Http
+import HttpMethods exposing (HttpMethod, parse, toString)
+import JSVal
+import Json.Decode
 import JsonViewer
 import LocalStorageData exposing (..)
 import Models exposing (Model, PageState(..), firebaseConfigLocalStorageKey)
@@ -104,11 +109,23 @@ update msg model =
                 "Add Parameter" ->
                     update Msgs.AddRequestParameter model
 
+                "Add Assertion" ->
+                    update Msgs.AddAssertion model
+
                 _ ->
-                    ( model, Cmd.none )
+                    let
+                        _ =
+                            Debug.log ("_" ++ selectedOption)
+                    in
+                        ( model, Cmd.none )
 
         Msgs.AddRequestParameter ->
             ( { model | requestParameters = pushBlank model.requestParameters }
+            , Cmd.none
+            )
+
+        Msgs.AddAssertion ->
+            ( { model | assertions = pushBlank model.assertions }
             , Cmd.none
             )
 
@@ -124,6 +141,19 @@ update msg model =
 
         Msgs.DeleteRequestParameter index ->
             ( { model | requestParameters = remove index model.requestParameters }, Cmd.none )
+
+        Msgs.ChangeAssertionName index newName ->
+            ( { model | assertions = updateName index newName model.assertions }
+            , Cmd.none
+            )
+
+        Msgs.ChangeAssertionValue index newValue ->
+            ( { model | assertions = updateValue index newValue model.assertions }
+            , Cmd.none
+            )
+
+        Msgs.DeleteAssertion index ->
+            ( { model | assertions = remove index model.assertions }, Cmd.none )
 
         Msgs.HttpMethodsDropdownChange selectedHttpMethodString ->
             ( { model | httpMethod = parse selectedHttpMethodString }, Cmd.none )

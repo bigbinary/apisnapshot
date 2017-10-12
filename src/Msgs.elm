@@ -12,9 +12,13 @@ type Msg
     | MoreActionsDropdownChange String
     | HttpMethodsDropdownChange String
     | AddRequestParameter
+    | AddAssertion
     | ChangeRequestParameterName Int String
     | ChangeRequestParameterValue Int String
     | DeleteRequestParameter Int
+    | ChangeAssertionName Int String
+    | ChangeAssertionValue Int String
+    | DeleteAssertion Int
     | OnLocationChange Location
     | OnLocalStorageSet String
     | OnLocalStorageGet String
