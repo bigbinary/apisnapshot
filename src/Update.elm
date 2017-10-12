@@ -3,9 +3,9 @@ module Update exposing (update)
 import Array
 import Http
 import HttpMethods exposing (HttpMethod, parse, toString)
+import JSVal
 import Json.Decode
 import JsonViewer
-import JSVal
 import LocalStorageData exposing (..)
 import Models exposing (Model, PageState(..), firebaseConfigLocalStorageKey)
 import Msgs exposing (Msg)
@@ -91,7 +91,17 @@ updateErrorResponse model error =
 
 changeUrl : Model -> String -> Model
 changeUrl model newUrl =
-    { model | url = newUrl }
+    let
+        isUrlEmpty =
+            newUrl |> String.trim |> String.isEmpty
+
+        error =
+            if isUrlEmpty then
+                Just "Please enter a url"
+            else
+                Nothing
+    in
+        { model | url = newUrl, error = error }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -103,7 +113,12 @@ update msg model =
             )
 
         Msgs.Submit ->
-            ( { model | pageState = Models.Loading }, requestCommand model )
+            case model.error of
+                Just _ ->
+                    ( model, Cmd.none )
+
+                Nothing ->
+                    ( { model | pageState = Models.Loading }, requestCommand model )
 
         Msgs.ResponseAvailable (Ok value) ->
             ( updateModelWithResponse model value, Cmd.none )

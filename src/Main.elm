@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import HttpMethods exposing (HttpMethod(..))
 import LocalStorageData exposing (..)
-import Models exposing (PageState(..), Model, FirebaseConfig, firebaseConfigLocalStorageKey)
+import Models exposing (FirebaseConfig, Model, PageState(..), firebaseConfigLocalStorageKey)
 import Msgs exposing (Msg)
 import Navigation exposing (Location)
 import Ports exposing (..)
@@ -15,6 +15,7 @@ import View exposing (view)
 initialModel : Route -> Model
 initialModel route =
     { url = "https://swapi.co/api/people/1/"
+    , error = Nothing
     , httpMethod = Get
     , requestParameters = empty
     , pageState = Empty

@@ -39,6 +39,7 @@ type alias FirebaseConfig =
 
 type alias Model =
     { url : String
+    , error : Maybe String
     , httpMethod : HttpMethod
     , requestParameters : RequestParameters
     , pageState : PageState
