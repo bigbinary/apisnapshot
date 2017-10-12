@@ -1,10 +1,5 @@
 module Update exposing (update)
 
-import Array
-import Http
-import HttpMethods exposing (HttpMethod, parse, toString)
-import JSVal
-import Json.Decode
 import JsonViewer
 import LocalStorageData exposing (..)
 import Models exposing (Model, PageState(..), firebaseConfigLocalStorageKey)
@@ -15,60 +10,21 @@ import Ports exposing (..)
 import RequestParameters exposing (..)
 import Router exposing (parseLocation)
 import Set
-
-
-urlWithEncodedParameters : String -> RequestParameters -> String
-urlWithEncodedParameters url requestParameters =
-    requestParameters
-        |> Array.filter (\parameter -> parameter.name /= "")
-        |> Array.map (\parameter -> Http.encodeUri parameter.name ++ "=" ++ Http.encodeUri parameter.value)
-        |> Array.toList
-        |> String.join "&"
-        |> (++) (url ++ "?")
+import HttpUtil
+import Http
+import HttpMethods exposing (parse)
 
 
 requestCommand : Model -> Cmd Msg
 requestCommand model =
     let
         encodedUrl =
-            urlWithEncodedParameters model.url model.requestParameters
+            HttpUtil.encodeUrl model.url model.requestParameters
 
         request =
-            buildRequest encodedUrl model.httpMethod
+            HttpUtil.buildRequest encodedUrl model.httpMethod
     in
         Http.send Msgs.ResponseAvailable request
-
-
-buildRequest : String -> HttpMethod -> Http.Request (Http.Response String)
-buildRequest url httpMethod =
-    Http.request
-        { method = HttpMethods.toString httpMethod
-        , headers = []
-        , url = url
-        , body = Http.emptyBody
-        , expect = Http.expectStringResponse preserveFullResponse
-        , timeout = Nothing
-        , withCredentials = False
-        }
-
-
-preserveFullResponse : Http.Response String -> Result String (Http.Response String)
-preserveFullResponse resp =
-    Ok resp
-
-
-parseResponseBodyToJSVal : Http.Response String -> JSVal.JSVal
-parseResponseBodyToJSVal httpResponse =
-    let
-        result =
-            Json.Decode.decodeString JSVal.decoder httpResponse.body
-    in
-        case result of
-            Ok jsonValue ->
-                jsonValue
-
-            Err err ->
-                JSVal.JSString ("Error parsing the body. " ++ err)
 
 
 updateModelWithResponse : Model -> Http.Response String -> Model
@@ -79,7 +35,7 @@ updateModelWithResponse model httpResponse =
                 { raw = httpResponse
                 , collapsedNodePaths = Set.empty
                 , json =
-                    JsonViewer.fromJSVal (parseResponseBodyToJSVal httpResponse)
+                    JsonViewer.fromJSVal (HttpUtil.parseResponseBodyToJson httpResponse)
                 }
     }
 
