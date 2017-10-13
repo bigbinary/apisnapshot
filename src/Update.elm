@@ -31,8 +31,8 @@ requestCommand model =
         Http.send Msgs.ResponseAvailable request
 
 
-verifyAssertion : Assertions.Assertion -> Http.Response String -> Assertions.Assertion
-verifyAssertion assertion httpResponse =
+verifyAssertion : Http.Response String -> Assertions.Assertion -> Assertions.Assertion
+verifyAssertion httpResponse assertion =
     let
         isResponseStatusCode200 =
             Basics.toString (httpResponse.status.code) == assertion.value
@@ -49,33 +49,13 @@ verifyAssertion assertion httpResponse =
         { assertion | state = state }
 
 
-verifyAssertionRecord : Maybe Assertions.Assertion -> Int -> Model -> Http.Response String -> Model
-verifyAssertionRecord assertionRecord position model httpResponse =
-    case assertionRecord of
-        Nothing ->
-            model
-
-        Just assertion ->
-            let
-                newAssertion =
-                    verifyAssertion assertion httpResponse
-
-                assertions =
-                    Array.set position newAssertion model.assertions
-            in
-                { model | assertions = assertions }
-
-
 verifyAssertions : Model -> Http.Response String -> Model
 verifyAssertions model httpResponse =
     let
-        position =
-            0
-
-        assertionRecord =
-            Array.get position model.assertions
+        newAssertions =
+            Array.map (verifyAssertion httpResponse) model.assertions
     in
-        verifyAssertionRecord assertionRecord position model httpResponse
+        { model | assertions = newAssertions }
 
 
 updateModelWithResponse : Model -> Http.Response String -> Model
