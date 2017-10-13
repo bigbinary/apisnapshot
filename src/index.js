@@ -1,3 +1,9 @@
+// This import loads the firebase namespace along with all its type information
+import * as firebase from 'firebase/app';
+
+// This imports load individual 'database' service into the firebase namespace
+import 'firebase/database';
+
 import './main.css';
 import { Main } from './Main.elm';
 
