@@ -131,6 +131,7 @@ itemView index assertion =
             , onClick (Msgs.DeleteAssertion index)
             ]
             [ text "×" ]
+        , span [] [ text (toString assertion.state) ]
         ]
 
 

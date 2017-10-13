@@ -82,7 +82,6 @@ view model =
                     ]
                 , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
                 ]
-            , div [] [ text (toString (model.assertions)) ]
             , div [ class "error" ] [ text (Maybe.withDefault "" model.error) ]
             , div [ class "RequestParameters" ] [ requestParametersView ]
             , div [ class "RequestParameters" ] [ assertionsView ]
