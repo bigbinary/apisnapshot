@@ -32,7 +32,13 @@ app.ports.firebaseInitialize.subscribe(configString => {
 
     try {
       const database = firebase.database();
-      app.ports.firebaseInitializeResponse.send({ "success": true, "error": "" });
+      database.ref("tryWritePermission").set(parseInt(Math.random() * 100000))
+        .then(response => {
+          app.ports.firebaseInitializeResponse.send({ "success": true, "error": "" });
+        })
+        .catch(error => {
+          app.ports.firebaseInitializeResponse.send({ "success": false, "error": error.message });
+        });
     } catch (error) {
       app.ports.firebaseInitializeResponse.send({ "success": false, "error": error.message });
     }
