@@ -6,7 +6,12 @@ import Html.Events exposing (..)
 import Json.Encode as Encode exposing (encode)
 import Json.Decode as Decode
 import LocalStorageData exposing (..)
-import Models exposing (FirebaseConfig, firebaseConfigLocalStorageKey)
+import Models
+    exposing
+        ( FirebaseConfig
+        , FirebaseSdkInitializationState
+        , firebaseConfigLocalStorageKey
+        )
 import Msgs exposing (PreferencesMsg(..))
 import Json.Decode.Pipeline as DecodePipeline
 import Ports
@@ -87,11 +92,12 @@ update msg model =
                 ( model, Ports.localStorageSet cmdValue )
 
 
-view : FirebaseConfig -> Html PreferencesMsg
-view config =
-    div [ class "col-md-6" ]
+view : FirebaseConfig -> FirebaseSdkInitializationState -> Html PreferencesMsg
+view config firebaseSdkInitializationState =
+    div [ class "col-md-12" ]
         [ h2 [] [ text "Firebase Config" ]
-        , Html.form [ class "form-horizontal", onSubmit FirebaseConfigSubmit ]
+        , viewFirebaseSdkInitiationState firebaseSdkInitializationState
+        , Html.form [ class "col-md-6 form-horizontal", onSubmit FirebaseConfigSubmit ]
             [ viewInput "apiKey" config.apiKey ChangeApiKey
             , viewInput "authDomain" config.authDomain ChangeAuthDomain
             , viewInput "databaseURL" config.databaseURL ChangeDatabaseUrl
@@ -105,6 +111,19 @@ view config =
                 ]
             ]
         ]
+
+
+viewFirebaseSdkInitiationState : FirebaseSdkInitializationState -> Html PreferencesMsg
+viewFirebaseSdkInitiationState state =
+    case state of
+        Models.Initializing ->
+            p [ class "text-info" ] [ text "Firebase SDK is initializing" ]
+
+        Models.Intialized ->
+            p [ class "text-success" ] [ text "Firebase SDK is initialized" ]
+
+        Models.InitializationError error ->
+            p [ class "text-danger" ] [ text error ]
 
 
 viewInput : String -> String -> (String -> PreferencesMsg) -> Html PreferencesMsg

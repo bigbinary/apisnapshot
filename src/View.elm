@@ -22,7 +22,9 @@ page model =
             Pages.Home.view model
 
         Preferences ->
-            Pages.Preferences.view model.dirtyFirebaseConfig |> Html.map Msgs.PreferencesMsg
+            model.firebaseSdkInitializationState
+                |> Pages.Preferences.view model.dirtyFirebaseConfig
+                |> Html.map Msgs.PreferencesMsg
 
         NotFound ->
             Pages.NotFound.view model
