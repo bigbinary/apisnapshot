@@ -18,6 +18,7 @@ type Msg
     | OnLocationChange Location
     | OnLocalStorageSet String
     | OnLocalStorageGet String
+    | OnFirebaseInitialize { success : Bool, error : String }
     | PreferencesMsg PreferencesMsg
 
 
