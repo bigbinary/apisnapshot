@@ -1,6 +1,7 @@
 module RequestParameters
     exposing
-        ( RequestParameters
+        ( RequestParameter
+        , RequestParameters
         , empty
         , pushBlank
         , updateName
