@@ -136,17 +136,11 @@ update msg model =
                 ( { model | route = newRoute }, Cmd.none )
 
         Msgs.OnLocalStorageSet response ->
-            let
-                cmd =
-                    Cmd.batch
-                        [ localStorageGet firebaseConfigLocalStorageKey
-                        , Navigation.newUrl "#"
-                        ]
-            in
-                if response == "true" then
-                    ( model, cmd )
-                else
-                    ( model, Cmd.none )
+            if response == "true" then
+                { model | firebaseSdkInitializationState = Models.Initializing }
+                    ! [ localStorageGet firebaseConfigLocalStorageKey ]
+            else
+                model ! []
 
         Msgs.OnLocalStorageGet response ->
             let
