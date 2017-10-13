@@ -42,9 +42,9 @@ verifyAssertion httpResponse assertion =
 
         state =
             if isAssertionTrue then
-                Assertions.PASSED
+                Assertions.Passed
             else
-                Assertions.FAILED
+                Assertions.Failed
     in
         { assertion | state = state }
 

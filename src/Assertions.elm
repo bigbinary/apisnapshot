@@ -12,9 +12,9 @@ import Msgs exposing (Msg)
 
 
 type State
-    = EMPTY
-    | PASSED
-    | FAILED
+    = Empty
+    | Passed
+    | Failed
 
 
 type alias Assertion =
@@ -38,7 +38,7 @@ blankAssertion : Assertion
 blankAssertion =
     { key = ""
     , value = ""
-    , state = EMPTY
+    , state = Empty
     , keyError = Nothing
     , valueError = Nothing
     }
@@ -112,6 +112,7 @@ remove index assertions =
 -- VIEW --
 
 
+classForFieldError : Maybe String -> String
 classForFieldError error =
     case error of
         Nothing ->
@@ -121,15 +122,16 @@ classForFieldError error =
             "fieldError"
 
 
+textForState : State -> String
 textForState state =
     case state of
-        EMPTY ->
+        Empty ->
             ""
 
-        PASSED ->
+        Passed ->
             "Passed"
 
-        FAILED ->
+        Failed ->
             "Failed"
 
 
