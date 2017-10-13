@@ -12,7 +12,7 @@ import Msgs exposing (Msg)
 
 
 type State
-    = Empty
+    = EMPTY
     | PASSED
     | FAILED
 
@@ -21,6 +21,8 @@ type alias Assertion =
     { key : String
     , value : String
     , state : State
+    , keyError : Maybe String
+    , valueError : Maybe String
     }
 
 
@@ -36,7 +38,9 @@ blankAssertion : Assertion
 blankAssertion =
     { key = ""
     , value = ""
-    , state = Empty
+    , state = EMPTY
+    , keyError = Nothing
+    , valueError = Nothing
     }
 
 
@@ -108,6 +112,27 @@ remove index assertions =
 -- VIEW --
 
 
+classForFieldError error =
+    case error of
+        Nothing ->
+            ""
+
+        Just _ ->
+            "fieldError"
+
+
+textForState state =
+    case state of
+        EMPTY ->
+            ""
+
+        PASSED ->
+            "Passed"
+
+        FAILED ->
+            "Failed"
+
+
 itemView : Int -> Assertion -> Html Msg
 itemView index assertion =
     li [ attribute "data-assertion-id" (toString index) ]
@@ -116,7 +141,7 @@ itemView index assertion =
             , placeholder "Enter key name"
             , value assertion.key
             , onInput (Msgs.ChangeAssertionName index)
-            , class "fieldError"
+            , class (classForFieldError assertion.keyError)
             ]
             []
         , input
@@ -124,6 +149,7 @@ itemView index assertion =
             , placeholder "Enter Value"
             , value assertion.value
             , onInput (Msgs.ChangeAssertionValue index)
+            , class (classForFieldError assertion.valueError)
             ]
             []
         , a
@@ -132,7 +158,7 @@ itemView index assertion =
             , onClick (Msgs.DeleteAssertion index)
             ]
             [ text "×" ]
-        , span [] [ text (toString assertion.state) ]
+        , span [] [ text (textForState assertion.state) ]
         ]
 
 
