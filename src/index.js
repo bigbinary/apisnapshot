@@ -29,6 +29,13 @@ app.ports.firebaseInitialize.subscribe(configString => {
 
   const initializeApp = () => {
     firebase.initializeApp(config);
+
+    try {
+      const database = firebase.database();
+      app.ports.firebaseInitializeResponse.send({ "success": true, "error": "" });
+    } catch (error) {
+      app.ports.firebaseInitializeResponse.send({ "success": false, "error": error.message });
+    }
   }
 
   // Fix: Firebase App named '[DEFAULT]' already exists (app/duplicate-app)
