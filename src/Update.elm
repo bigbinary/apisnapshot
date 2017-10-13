@@ -38,7 +38,7 @@ verifyAssertion httpResponse assertion =
             Basics.toString (httpResponse.status.code) == assertion.value
 
         isAssertionTrue =
-            assertion.name == "equals" && assertion.value == "200" && isResponseStatusCode200
+            assertion.key == "equals" && assertion.value == "200" && isResponseStatusCode200
 
         state =
             if isAssertionTrue then

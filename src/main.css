@@ -96,6 +96,10 @@ img {
     color: darkred;
 }
 
+.fieldError {
+  border-color: red;
+}
+
 .JsonView__collapsible:hover {
     text-decoration: underline;
     cursor: pointer;

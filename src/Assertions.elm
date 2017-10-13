@@ -18,7 +18,7 @@ type State
 
 
 type alias Assertion =
-    { name : String
+    { key : String
     , value : String
     , state : State
     }
@@ -34,7 +34,7 @@ type alias Assertions =
 
 blankAssertion : Assertion
 blankAssertion =
-    { name = ""
+    { key = ""
     , value = ""
     , state = Empty
     }
@@ -68,7 +68,7 @@ updateName index newName assertions =
         updatedItem =
             case item of
                 Just item_ ->
-                    { item_ | name = newName }
+                    { item_ | key = newName }
 
                 Nothing ->
                     blankAssertion
@@ -113,9 +113,10 @@ itemView index assertion =
     li [ attribute "data-assertion-id" (toString index) ]
         [ input
             [ type_ "text"
-            , placeholder "Enter Name"
-            , value assertion.name
+            , placeholder "Enter key name"
+            , value assertion.key
             , onInput (Msgs.ChangeAssertionName index)
+            , class "fieldError"
             ]
             []
         , input
