@@ -22,3 +22,11 @@ app.ports.localStorageSet.subscribe(object => {
     app.ports.setResponse.send("false");
   }
 });
+
+
+app.ports.firebaseInitialize.subscribe(configString => {
+  const config = JSON.parse(configString);
+
+  firebase.initializeApp(config);
+  app.ports.firebaseInitializeResponse.send({ "success": true, "error": "" });
+});
