@@ -49,25 +49,33 @@ verifyAssertion assertion httpResponse =
         { assertion | state = state }
 
 
+verifyAssertionRecord : Maybe Assertions.Assertion -> Int -> Model -> Http.Response String -> Model
+verifyAssertionRecord assertionRecord position model httpResponse =
+    case assertionRecord of
+        Nothing ->
+            model
+
+        Just assertion ->
+            let
+                newAssertion =
+                    verifyAssertion assertion httpResponse
+
+                assertions =
+                    Array.set position newAssertion model.assertions
+            in
+                { model | assertions = assertions }
+
+
 verifyAssertions : Model -> Http.Response String -> Model
 verifyAssertions model httpResponse =
     let
-        result =
-            Array.get 0 model.assertions
+        position =
+            0
+
+        assertionRecord =
+            Array.get position model.assertions
     in
-        case result of
-            Nothing ->
-                model
-
-            Just assertion ->
-                let
-                    newAssertion =
-                        verifyAssertion assertion httpResponse
-
-                    assertions =
-                        Array.set 0 newAssertion model.assertions
-                in
-                    { model | assertions = assertions }
+        verifyAssertionRecord assertionRecord position model httpResponse
 
 
 updateModelWithResponse : Model -> Http.Response String -> Model
