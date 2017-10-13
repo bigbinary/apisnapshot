@@ -47,6 +47,7 @@ subscriptions model =
     Sub.batch
         [ Ports.localStorageSetResponse Msgs.OnLocalStorageSet
         , Ports.localStorageGetResponse Msgs.OnLocalStorageGet
+        , Ports.firebaseInitializeResponse Msgs.OnFirebaseInitialize
         ]
 
 
