@@ -1,13 +1,4 @@
-module Assertions
-    exposing
-        ( Assertions
-        , empty
-        , pushBlank
-        , updateName
-        , updateValue
-        , remove
-        , view
-        )
+module Assertions exposing (..)
 
 import Array
 import Array.Extra

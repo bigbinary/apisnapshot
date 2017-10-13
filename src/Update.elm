@@ -3,8 +3,6 @@ module Update exposing (update)
 import Array
 import Http
 import HttpMethods exposing (HttpMethod, parse, toString)
-import JSVal
-import Json.Decode
 import JsonViewer
 import LocalStorageData exposing (..)
 import Models exposing (Model, PageState(..), firebaseConfigLocalStorageKey)
@@ -33,22 +31,55 @@ requestCommand model =
         Http.send Msgs.ResponseAvailable request
 
 
+verifyAssertion : Assertions.Assertion -> Http.Response String -> Assertions.Assertion
+verifyAssertion assertion httpResponse =
+    let
+        isResponseStatusCode200 =
+            Basics.toString (httpResponse.status.code) == assertion.value
+
+        isAssertionTrue =
+            assertion.name == "equals" && assertion.value == "200" && isResponseStatusCode200
+
+        state =
+            if isAssertionTrue then
+                Assertions.PASSED
+            else
+                Assertions.FAILED
+    in
+        { assertion | state = state }
+
+
+verifyAssertions : Model -> Http.Response String -> Model
+verifyAssertions model httpResponse =
+    let
+        result =
+            Array.get 0 model.assertions
+    in
+        case result of
+            Nothing ->
+                model
+
+            Just assertion ->
+                let
+                    newAssertion =
+                        verifyAssertion assertion httpResponse
+
+                    assertions =
+                        Array.set 0 newAssertion model.assertions
+                in
+                    { model | assertions = assertions }
+
+
 updateModelWithResponse : Model -> Http.Response String -> Model
 updateModelWithResponse model httpResponse =
     let
         json =
             JsonViewer.fromJSVal (HttpUtil.parseResponseBodyToJson httpResponse)
 
-        statusCode =
-            httpResponse.status.code
-
-        _ =
-            Debug.log "statusCode" statusCode
-
-        _ =
-            Debug.log "json" json
+        newModel =
+            verifyAssertions model httpResponse
     in
-        { model
+        { newModel
             | pageState =
                 Loaded
                     { raw = httpResponse
