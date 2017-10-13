@@ -27,6 +27,14 @@ app.ports.localStorageSet.subscribe(object => {
 app.ports.firebaseInitialize.subscribe(configString => {
   const config = JSON.parse(configString);
 
-  firebase.initializeApp(config);
-  app.ports.firebaseInitializeResponse.send({ "success": true, "error": "" });
+  const initializeApp = () => {
+    firebase.initializeApp(config);
+  }
+
+  // Fix: Firebase App named '[DEFAULT]' already exists (app/duplicate-app)
+  if (firebase.apps.length > 0) {
+    firebase.app().delete().then(initializeApp);
+  } else {
+    initializeApp();
+  }
 });
