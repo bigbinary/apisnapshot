@@ -45,7 +45,8 @@ view model =
                     ]
     in
         div []
-            [ Html.form [ class "UrlForm", onSubmit Msgs.Submit, action "javascript:void(0)" ]
+            [ viewFirebaseSdkInitializationError model.firebaseSdkInitializationState
+            , Html.form [ class "UrlForm", onSubmit Msgs.Submit, action "javascript:void(0)" ]
                 [ httpMethodDropdown model.httpMethod
                 , input
                     [ class "UrlForm__input"
@@ -70,6 +71,24 @@ view model =
             , div [ class "RequestParameters" ] [ requestParametersView ]
             , div [ class "Result" ] [ responseView ]
             ]
+
+
+viewFirebaseSdkInitializationError : FirebaseSdkInitializationState -> Html msg
+viewFirebaseSdkInitializationError state =
+    case state of
+        Models.InitializationError error ->
+            p []
+                [ span [] [ text "Error while initializing the Firebase SDK:" ]
+                , br [] []
+                , strong [ class "text-danger" ] [ text error ]
+                , br [] []
+                , span [] [ text "Please add correct Firebase configuration on the " ]
+                , a [ href "#/preferences" ] [ text "Preferences" ]
+                , span [] [ text " page." ]
+                ]
+
+        _ ->
+            Html.text ""
 
 
 httpMethodDropdownOption : String -> Html msg
