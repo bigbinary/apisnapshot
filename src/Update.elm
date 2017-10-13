@@ -35,15 +35,18 @@ requestCommand model =
 
 updateModelWithResponse : Model -> Http.Response String -> Model
 updateModelWithResponse model httpResponse =
-    { model
-        | pageState =
-            Loaded
-                { raw = httpResponse
-                , collapsedNodePaths = Set.empty
-                , json =
-                    JsonViewer.fromJSVal (HttpUtil.parseResponseBodyToJson httpResponse)
-                }
-    }
+    let
+        json =
+            JsonViewer.fromJSVal (HttpUtil.parseResponseBodyToJson httpResponse)
+    in
+        { model
+            | pageState =
+                Loaded
+                    { raw = httpResponse
+                    , collapsedNodePaths = Set.empty
+                    , json = json
+                    }
+        }
 
 
 updateErrorResponse : Model -> Http.Error -> Model
