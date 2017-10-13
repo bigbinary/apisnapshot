@@ -129,7 +129,7 @@ errorMarkup error =
             div [] [ p [ class "Error" ] [ text ("Bad payload error: " ++ message) ], httpErrorMarkup response ]
 
 
-responseMarkup : Response -> Html Msg
+responseMarkup : Models.Response -> Html Msg
 responseMarkup response =
     let
         rootNode =
