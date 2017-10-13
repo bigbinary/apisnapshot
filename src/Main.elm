@@ -20,6 +20,7 @@ initialModel route =
     , requestParameters = empty
     , pageState = Empty
     , route = route
+    , firebaseSdkInitializationState = Models.Initializing
     , firebaseConfig = LocalStorageData.Loading
     , dirtyFirebaseConfig = initialFirebaseConfig
     }

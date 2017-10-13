@@ -27,6 +27,12 @@ type PageState
     | Loaded Response
 
 
+type FirebaseSdkInitializationState
+    = Initializing
+    | Intialized
+    | InitializationError String
+
+
 type alias FirebaseConfig =
     { apiKey : String
     , authDomain : String
@@ -44,6 +50,7 @@ type alias Model =
     , requestParameters : RequestParameters
     , pageState : PageState
     , route : Route
+    , firebaseSdkInitializationState : FirebaseSdkInitializationState
     , firebaseConfig : LocalStorageData String FirebaseConfig
     , dirtyFirebaseConfig : FirebaseConfig
     }
