@@ -5,7 +5,7 @@ import LocalStorageData exposing (..)
 import Models exposing (Model, PageState(..), firebaseConfigLocalStorageKey)
 import Msgs exposing (Msg)
 import Navigation
-import Pages.Preferences
+import Pages.Preferences exposing (stringifyFirebaseConfig)
 import Ports exposing (..)
 import RequestParameters exposing (..)
 import Router exposing (parseLocation)
@@ -169,6 +169,11 @@ update msg model =
                         | firebaseConfig = decodedFirebaseConfig
                         , dirtyFirebaseConfig = dirtFirebaseConfig
                     }
+
+                firebaseConfigString =
+                    stringifyFirebaseConfig dirtFirebaseConfig
+            in
+                ( newModel, Ports.firebaseInitialize firebaseConfigString )
             in
                 ( newModel, Cmd.none )
 
