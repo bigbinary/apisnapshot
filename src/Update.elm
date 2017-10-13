@@ -38,6 +38,15 @@ updateModelWithResponse model httpResponse =
     let
         json =
             JsonViewer.fromJSVal (HttpUtil.parseResponseBodyToJson httpResponse)
+
+        statusCode =
+            httpResponse.status.code
+
+        _ =
+            Debug.log "statusCode" statusCode
+
+        _ =
+            Debug.log "json" json
     in
         { model
             | pageState =
