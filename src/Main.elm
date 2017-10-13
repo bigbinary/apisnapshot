@@ -48,6 +48,7 @@ subscriptions model =
         [ Ports.localStorageSetResponse Msgs.OnLocalStorageSet
         , Ports.localStorageGetResponse Msgs.OnLocalStorageGet
         , Ports.firebaseInitializeResponse Msgs.OnFirebaseInitialize
+        , Ports.firebaseSaveHitResponse Msgs.OnFirebaseSaveHit
         ]
 
 

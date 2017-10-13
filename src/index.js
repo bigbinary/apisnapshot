@@ -51,3 +51,16 @@ app.ports.firebaseInitialize.subscribe(configString => {
     initializeApp();
   }
 });
+
+
+app.ports.firebaseSaveHit.subscribe(object => {
+  const uuid = parseInt(Math.random() * 1000000000000000).toString();
+
+  firebase.database().ref("hits/" + uuid).set(object)
+    .then(response => {
+      app.ports.firebaseSaveHitResponse.send({ "uuid": uuid, "error": "" });
+    })
+    .catch(error => {
+      app.ports.firebaseSaveHitResponse.send({ "uuid": "", "error": error.message });
+    });
+});

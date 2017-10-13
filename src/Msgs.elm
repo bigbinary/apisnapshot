@@ -19,6 +19,7 @@ type Msg
     | OnLocalStorageSet String
     | OnLocalStorageGet String
     | OnFirebaseInitialize { success : Bool, error : String }
+    | OnFirebaseSaveHit { uuid : String, error : String }
     | PreferencesMsg PreferencesMsg
 
 

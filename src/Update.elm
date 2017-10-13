@@ -10,6 +10,7 @@ import Ports exposing (..)
 import RequestParameters exposing (..)
 import Router exposing (parseLocation)
 import Set
+import HitEncoder
 import HttpUtil
 import Http
 import HttpMethods exposing (parse)
@@ -76,11 +77,20 @@ update msg model =
                 Nothing ->
                     ( { model | pageState = Models.Loading }, requestCommand model )
 
-        Msgs.ResponseAvailable (Ok value) ->
-            ( updateModelWithResponse model value, Cmd.none )
+        Msgs.ResponseAvailable response ->
+            let
+                updatedModel =
+                    case response of
+                        Ok value ->
+                            updateModelWithResponse model value
 
-        Msgs.ResponseAvailable (Err error) ->
-            ( updateErrorResponse model error, Cmd.none )
+                        Err error ->
+                            updateErrorResponse model error
+
+                command =
+                    updatedModel |> HitEncoder.encode |> Ports.firebaseSaveHit
+            in
+                updatedModel ! [ command ]
 
         Msgs.ToggleJsonCollectionView id ->
             ( case model.pageState of
@@ -178,6 +188,13 @@ update msg model =
                         Models.InitializationError response.error
             in
                 { model | firebaseSdkInitializationState = newState } ! []
+
+        Msgs.OnFirebaseSaveHit response ->
+            let
+                _ =
+                    Debug.log "UUID of the hit saved at: " response
+            in
+                model ! []
 
         Msgs.PreferencesMsg subMsg ->
             let
