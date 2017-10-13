@@ -10,6 +10,7 @@ import RequestParameters exposing (empty)
 import Router exposing (..)
 import Update exposing (update)
 import View exposing (view)
+import Assertions
 
 
 initialModel : Route -> Model
@@ -18,7 +19,7 @@ initialModel route =
     , error = Nothing
     , httpMethod = Get
     , requestParameters = empty
-    , assertions = empty
+    , assertions = Assertions.empty
     , pageState = Empty
     , route = route
     , firebaseConfig = LocalStorageData.Loading

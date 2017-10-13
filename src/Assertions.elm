@@ -20,9 +20,16 @@ import Msgs exposing (Msg)
 -- TYPES --
 
 
+type State
+    = Empty
+    | PASSED
+    | FAILED
+
+
 type alias Assertion =
     { name : String
     , value : String
+    , state : State
     }
 
 
@@ -38,6 +45,7 @@ blankAssertion : Assertion
 blankAssertion =
     { name = ""
     , value = ""
+    , state = Empty
     }
 
 

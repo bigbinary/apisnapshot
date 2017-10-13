@@ -13,6 +13,7 @@ import Navigation
 import Pages.Preferences
 import Ports exposing (..)
 import RequestParameters exposing (..)
+import Assertions
 import Router exposing (parseLocation)
 import Set
 import HttpUtil
@@ -125,7 +126,7 @@ update msg model =
             )
 
         Msgs.AddAssertion ->
-            ( { model | assertions = pushBlank model.assertions }
+            ( { model | assertions = Assertions.pushBlank model.assertions }
             , Cmd.none
             )
 
@@ -143,17 +144,17 @@ update msg model =
             ( { model | requestParameters = remove index model.requestParameters }, Cmd.none )
 
         Msgs.ChangeAssertionName index newName ->
-            ( { model | assertions = updateName index newName model.assertions }
+            ( { model | assertions = Assertions.updateName index newName model.assertions }
             , Cmd.none
             )
 
         Msgs.ChangeAssertionValue index newValue ->
-            ( { model | assertions = updateValue index newValue model.assertions }
+            ( { model | assertions = Assertions.updateValue index newValue model.assertions }
             , Cmd.none
             )
 
         Msgs.DeleteAssertion index ->
-            ( { model | assertions = remove index model.assertions }, Cmd.none )
+            ( { model | assertions = Assertions.remove index model.assertions }, Cmd.none )
 
         Msgs.HttpMethodsDropdownChange selectedHttpMethodString ->
             ( { model | httpMethod = parse selectedHttpMethodString }, Cmd.none )
