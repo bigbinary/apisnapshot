@@ -174,8 +174,16 @@ update msg model =
                     stringifyFirebaseConfig dirtFirebaseConfig
             in
                 ( newModel, Ports.firebaseInitialize firebaseConfigString )
+
+        Msgs.OnFirebaseInitialize response ->
+            let
+                newState =
+                    if response.success then
+                        Models.Intialized
+                    else
+                        Models.InitializationError response.error
             in
-                ( newModel, Cmd.none )
+                { model | firebaseSdkInitializationState = newState } ! []
 
         Msgs.PreferencesMsg subMsg ->
             let
