@@ -6,10 +6,18 @@ import Models exposing (FirebaseConfig, Model, PageState(..), firebaseConfigLoca
 import Msgs exposing (Msg)
 import Navigation exposing (Location)
 import Ports exposing (..)
-import RequestParameters exposing (empty)
+import Pages.Hit.RequestParameters exposing (empty)
 import Router exposing (..)
 import Update exposing (update)
-import View exposing (view)
+import Models exposing (Model)
+import Msgs exposing (Msg)
+import Pages.Hit.Response
+import Pages.Hit.Request
+import Pages.Preferences
+import Pages.NotFound
+import Router exposing (..)
+import Html exposing (Html, div, ul, li, a, text)
+import Html.Attributes exposing (class, href)
 
 
 initialModel : Route -> Model
@@ -57,3 +65,26 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
+
+view : Model -> Html Msg
+view model =
+    div [ class "container-fluid" ]
+        [ div [] [ page model ]
+        ]
+
+
+page : Model -> Html Msg
+page model =
+    case model.route of
+        Home ->
+            div []
+                [ div [ class "container-fluid api-req-form__container" ] [ Pages.Hit.Request.view model ]
+                , Pages.Hit.Response.view model
+                ]
+
+        Preferences ->
+            Pages.Preferences.view model.dirtyFirebaseConfig |> Html.map Msgs.PreferencesMsg
+
+        NotFound ->
+            Pages.NotFound.view model

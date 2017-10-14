@@ -5,7 +5,7 @@ import Json.Decode
 import Http
 import HttpMethods exposing (HttpMethod, parse, toString)
 import Array
-import RequestParameters exposing (..)
+import Pages.Hit.RequestParameters exposing (..)
 
 
 encodeUrl : String -> RequestParameters -> String

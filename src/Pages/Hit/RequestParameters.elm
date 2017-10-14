@@ -1,4 +1,4 @@
-module RequestParameters
+module Pages.Hit.RequestParameters
     exposing
         ( RequestParameters
         , empty
@@ -137,10 +137,22 @@ itemView index requestParameter =
         ]
 
 
-view : RequestParameters -> Html Msg
-view requestParameters =
+fields : RequestParameters -> Html Msg
+fields requestParameters =
     ul []
         (requestParameters
             |> Array.toIndexedList
             |> List.map (\( index, requestParameter ) -> itemView index requestParameter)
         )
+
+
+view : RequestParameters -> Html Msg
+view requestParameters =
+    div []
+        [ div [ class "form-group__label" ]
+            [ span [] [ text "Request Parameters" ]
+            , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestParameter ]
+                [ text "Add Parameter" ]
+            ]
+        , fields requestParameters
+        ]

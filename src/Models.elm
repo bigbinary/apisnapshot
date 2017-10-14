@@ -4,7 +4,7 @@ import Http
 import HttpMethods exposing (HttpMethod)
 import JsonViewer
 import LocalStorageData exposing (..)
-import RequestParameters exposing (RequestParameters)
+import Pages.Hit.RequestParameters exposing (RequestParameters)
 import Router exposing (..)
 
 

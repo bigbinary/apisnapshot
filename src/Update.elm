@@ -7,7 +7,7 @@ import Msgs exposing (Msg)
 import Navigation
 import Pages.Preferences
 import Ports exposing (..)
-import RequestParameters exposing (..)
+import Pages.Hit.RequestParameters exposing (..)
 import Router exposing (parseLocation)
 import Set
 import HttpUtil
