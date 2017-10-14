@@ -36,13 +36,15 @@ urlInputField model =
 
 morePullDownMenu =
     div [ class "api-req-form__btn-group btn-group" ]
-        [ select
-            [ class "UrlForm__moreActionsDropdown"
-            , value "More"
-            , on "change" (Json.Decode.map Msgs.MoreActionsDropdownChange targetValue)
+        [ button [ type_ "button", class "btn btn-default dropdown-toggle", attribute "data-toggle" "dropdown", attribute "aria-haspopup" "true", attribute "aria-expanded" "false" ]
+            [ span [ class "api-req-form__more-text" ] [ text "More" ]
+            , span [ class "caret" ] []
+            , span [ class "sr-only" ] [ text "Toggle Dropdown" ]
             ]
-            [ option [ value "More" ] [ text "More" ]
-            , option [ value "Add Parameter" ] [ text "Add Parameter" ]
+        , ul [ class "dropdown-menu" ]
+            [ li []
+                [ a [ class "devise-links", onClick (Msgs.MoreActionsDropdownChange "Add Parameter") ] [ text "Add Parameter" ]
+                ]
             ]
         ]
 
