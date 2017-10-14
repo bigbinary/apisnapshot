@@ -16,7 +16,7 @@ import Models exposing (..)
 view : Model -> Html Msg
 view model =
     div [ class "row form-controls text-center" ]
-        [ form model (requestParametersView model)
+        [ formView model
         ]
 
 
@@ -36,14 +36,24 @@ urlInputField model =
 
 morePullDownMenu =
     div [ class "api-req-form__btn-group btn-group" ]
-        [ button [ type_ "button", class "btn btn-default dropdown-toggle", attribute "data-toggle" "dropdown", attribute "aria-haspopup" "true", attribute "aria-expanded" "false" ]
+        [ button
+            [ type_ "button"
+            , class "btn btn-default dropdown-toggle"
+            , attribute "data-toggle" "dropdown"
+            , attribute "aria-haspopup" "true"
+            , attribute "aria-expanded" "false"
+            ]
             [ span [ class "api-req-form__more-text" ] [ text "More" ]
             , span [ class "caret" ] []
             , span [ class "sr-only" ] [ text "Toggle Dropdown" ]
             ]
         , ul [ class "dropdown-menu" ]
             [ li []
-                [ a [ class "devise-links", onClick (Msgs.MoreActionsDropdownChange "Add Parameter") ] [ text "Add Parameter" ]
+                [ a
+                    [ class "devise-links"
+                    , onClick (Msgs.MoreActionsDropdownChange "Add Parameter")
+                    ]
+                    [ text "Add Parameter" ]
                 ]
             ]
         ]
@@ -53,7 +63,7 @@ errorMessage model =
     div [ class "error" ] [ text (Maybe.withDefault "" model.error) ]
 
 
-form model requestParametersView =
+formView model =
     Html.form [ class "bootstrap-center-form api-req-form__form", onSubmit Msgs.Submit, action "javascript:void(0)" ]
         [ div [ class "api-req-form__url-group" ]
             [ httpMethodDropdown model.httpMethod
@@ -62,7 +72,7 @@ form model requestParametersView =
             , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
             ]
         , errorMessage model
-        , div [ class "form-group" ] [ requestParametersView ]
+        , requestParametersView model
         ]
 
 

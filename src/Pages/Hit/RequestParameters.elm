@@ -139,7 +139,7 @@ itemView index requestParameter =
 
 fields : RequestParameters -> Html Msg
 fields requestParameters =
-    ul []
+    div [ class "aapi-req-form__form-inline form-inline" ]
         (requestParameters
             |> Array.toIndexedList
             |> List.map (\( index, requestParameter ) -> itemView index requestParameter)
@@ -148,11 +148,10 @@ fields requestParameters =
 
 view : RequestParameters -> Html Msg
 view requestParameters =
-    div []
+    div [ class "form-group" ]
         [ div [ class "form-group__label" ]
             [ span [] [ text "Request Parameters" ]
-            , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestParameter ]
-                [ text "Add Parameter" ]
+            , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestParameter ] [ text "Add Parameter" ]
             ]
         , fields requestParameters
         ]
