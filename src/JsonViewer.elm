@@ -260,6 +260,11 @@ collectionView parentNode collection caption =
 
 view : Node -> Html Msg
 view node =
+    div [ class "json-view" ] [ (view2 node) ]
+
+
+view2 : Node -> Html Msg
+view2 node =
     case node.jsonVal of
         JVString string ->
             span [ class "JsonView__string" ] [ text string ]

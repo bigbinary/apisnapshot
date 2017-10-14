@@ -13,68 +13,57 @@ import Msgs exposing (Msg)
 import RequestParameters
 
 
+requestParametersView model =
+    if Array.isEmpty model.requestParameters then
+        text ""
+    else
+        div []
+            [ div [ class "form-group__label" ]
+                [ span [] [ text "Request Parameters" ]
+                , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestParameter ]
+                    [ text "Add Parameter" ]
+                ]
+            , RequestParameters.view model.requestParameters
+            ]
+
+
 view : Model -> Html Msg
 view model =
-    let
-        responseView =
-            case model.pageState of
-                Empty ->
-                    text ""
+    div [ class "row form-controls text-center" ]
+        [ viewForForm model (requestParametersView model)
+        ]
 
-                Loading ->
-                    p [ class "Main__loading" ] [ text "Loading..." ]
 
-                Error error ->
-                    errorMarkup error
-
-                Loaded response ->
-                    responseMarkup response
-
-        requestParametersView =
-            if Array.isEmpty model.requestParameters then
-                text ""
-            else
-                div []
-                    [ div [ class "form-group__label" ]
-                        [ span [] [ text "Request Parameters" ]
-                        , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestParameter ]
-                            [ text "Add Parameter" ]
-                        ]
-                    , RequestParameters.view model.requestParameters
+viewForForm model requestParametersView =
+    Html.form [ class "bootstrap-center-form api-req-form__form", onSubmit Msgs.Submit, action "javascript:void(0)" ]
+        [ div [ class "api-req-form__url-group" ]
+            [ httpMethodDropdown model.httpMethod
+            , div [ class "api-req-form__url-control" ]
+                [ input
+                    [ class "input form-control required"
+                    , name "url"
+                    , type_ "text"
+                    , placeholder "Enter url here"
+                    , onInput Msgs.ChangeUrl
+                    , value model.url
                     ]
-    in
-        div [ class "row form-controls text-center" ]
-            [ Html.form [ class "bootstrap-center-form api-req-form__form", onSubmit Msgs.Submit, action "javascript:void(0)" ]
-                [ div [ class "api-req-form__url-group" ]
-                    [ httpMethodDropdown model.httpMethod
-                    , div [ class "api-req-form__url-control" ]
-                        [ input
-                            [ class "input form-control required"
-                            , name "url"
-                            , type_ "text"
-                            , placeholder "Enter url here"
-                            , onInput Msgs.ChangeUrl
-                            , value model.url
-                            ]
-                            []
-                        ]
-                    , div [ class "api-req-form__btn-group btn-group" ]
-                        [ select
-                            [ class "UrlForm__moreActionsDropdown"
-                            , value "More"
-                            , on "change" (Json.Decode.map Msgs.MoreActionsDropdownChange targetValue)
-                            ]
-                            [ option [ value "More" ] [ text "More" ]
-                            , option [ value "Add Parameter" ] [ text "Add Parameter" ]
-                            ]
-                        ]
-                    , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
-                    ]
-                , div [ class "error" ] [ text (Maybe.withDefault "" model.error) ]
-                , div [ class "form-group RequestParameters" ] [ requestParametersView ]
-                , div [ class "Result" ] [ responseView ]
+                    []
                 ]
+            , div [ class "api-req-form__btn-group btn-group" ]
+                [ select
+                    [ class "UrlForm__moreActionsDropdown"
+                    , value "More"
+                    , on "change" (Json.Decode.map Msgs.MoreActionsDropdownChange targetValue)
+                    ]
+                    [ option [ value "More" ] [ text "More" ]
+                    , option [ value "Add Parameter" ] [ text "Add Parameter" ]
+                    ]
+                ]
+            , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
             ]
+        , div [ class "error" ] [ text (Maybe.withDefault "" model.error) ]
+        , div [ class "form-group" ] [ requestParametersView ]
+        ]
 
 
 httpMethodDropdownOption : String -> Html msg
@@ -114,52 +103,3 @@ httpRawResponseMarkup response =
         [ h3 [] [ text "Raw Response Body" ]
         , pre [] [ code [] [ text response.body ] ]
         ]
-
-
-httpErrorMarkup : Http.Response String -> Html msg
-httpErrorMarkup response =
-    div []
-        [ httpStatusMarkup response, httpRawResponseMarkup response ]
-
-
-errorMarkup : Http.Error -> Html msg
-errorMarkup error =
-    case error of
-        Http.BadUrl url ->
-            p [ class "Error" ] [ text ("Bad Url! " ++ url) ]
-
-        Http.Timeout ->
-            p [ class "Error" ] [ text "Sorry the request timed out" ]
-
-        Http.NetworkError ->
-            p [ class "Error" ] [ text "There was a network error." ]
-
-        Http.BadStatus response ->
-            div [] [ p [ class "Error" ] [ text "Server returned an error." ], httpErrorMarkup response ]
-
-        Http.BadPayload message response ->
-            div [] [ p [ class "Error" ] [ text ("Bad payload error: " ++ message) ], httpErrorMarkup response ]
-
-
-responseMarkup : Models.Response -> Html Msg
-responseMarkup response =
-    let
-        rootNode =
-            { jsonVal = response.json
-            , nodePath = JsonViewer.rootNodePath
-            , depth = 0
-            , collapsedNodePaths = response.collapsedNodePaths
-            }
-    in
-        div []
-            [ httpStatusMarkup response.raw
-            , div [ class "Result__jsonView" ]
-                [ a [ class "btn" ] [ text "View raw" ]
-                , pre [ class "api-res__res" ]
-                    [ span [ class "block" ]
-                        [ JsonViewer.view rootNode
-                        ]
-                    ]
-                ]
-            , httpRawResponseMarkup response.raw
-            ]
