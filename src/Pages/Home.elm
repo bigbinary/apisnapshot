@@ -35,40 +35,45 @@ view model =
                 text ""
             else
                 div []
-                    [ h6 []
-                        [ span [ class "RequestParameters__heading" ]
-                            [ text "Request Parameters" ]
-                        , a [ href "javascript:void(0)", class "RequestParameters__add", onClick Msgs.AddRequestParameter ]
+                    [ div [ class "form-group__label" ]
+                        [ span [] [ text "Request Parameters" ]
+                        , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestParameter ]
                             [ text "Add Parameter" ]
                         ]
                     , RequestParameters.view model.requestParameters
                     ]
     in
-        div []
-            [ Html.form [ class "UrlForm", onSubmit Msgs.Submit, action "javascript:void(0)" ]
-                [ httpMethodDropdown model.httpMethod
-                , input
-                    [ class "UrlForm__input"
-                    , name "url"
-                    , type_ "text"
-                    , placeholder "Enter url here"
-                    , onInput Msgs.ChangeUrl
-                    , value model.url
+        div [ class "row form-controls text-center" ]
+            [ Html.form [ class "bootstrap-center-form api-req-form__form", onSubmit Msgs.Submit, action "javascript:void(0)" ]
+                [ div [ class "api-req-form__url-group" ]
+                    [ httpMethodDropdown model.httpMethod
+                    , div [ class "api-req-form__url-control" ]
+                        [ input
+                            [ class "input form-control required"
+                            , name "url"
+                            , type_ "text"
+                            , placeholder "Enter url here"
+                            , onInput Msgs.ChangeUrl
+                            , value model.url
+                            ]
+                            []
+                        ]
+                    , div [ class "api-req-form__btn-group btn-group" ]
+                        [ select
+                            [ class "UrlForm__moreActionsDropdown"
+                            , value "More"
+                            , on "change" (Json.Decode.map Msgs.MoreActionsDropdownChange targetValue)
+                            ]
+                            [ option [ value "More" ] [ text "More" ]
+                            , option [ value "Add Parameter" ] [ text "Add Parameter" ]
+                            ]
+                        ]
+                    , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
                     ]
-                    []
-                , select
-                    [ class "UrlForm__moreActionsDropdown"
-                    , value "More"
-                    , on "change" (Json.Decode.map Msgs.MoreActionsDropdownChange targetValue)
-                    ]
-                    [ option [ value "More" ] [ text "More" ]
-                    , option [ value "Add Parameter" ] [ text "Add Parameter" ]
-                    ]
-                , button [ class "UrlForm__button", type_ "Submit" ] [ text "Submit" ]
+                , div [ class "error" ] [ text (Maybe.withDefault "" model.error) ]
+                , div [ class "form-group RequestParameters" ] [ requestParametersView ]
+                , div [ class "Result" ] [ responseView ]
                 ]
-            , div [ class "error" ] [ text (Maybe.withDefault "" model.error) ]
-            , div [ class "RequestParameters" ] [ requestParametersView ]
-            , div [ class "Result" ] [ responseView ]
             ]
 
 
@@ -79,20 +84,27 @@ httpMethodDropdownOption httpMethodString =
 
 httpMethodDropdown : HttpMethod -> Html Msg
 httpMethodDropdown selectedHttpMethod =
-    select
-        [ class "UrlForm__httpMethodsDropdown"
-        , value <| HttpMethods.toString selectedHttpMethod
-        , on "change" <| Json.Decode.map Msgs.HttpMethodsDropdownChange targetValue
+    div []
+        [ select
+            [ class "form-control required"
+            , value <| HttpMethods.toString selectedHttpMethod
+            , on "change" <| Json.Decode.map Msgs.HttpMethodsDropdownChange targetValue
+            ]
+            (List.map httpMethodDropdownOption avaialableHttpMethodsString)
         ]
-        (List.map httpMethodDropdownOption avaialableHttpMethodsString)
 
 
 httpStatusMarkup : Http.Response String -> Html msg
 httpStatusMarkup response =
-    div []
-        [ p [ class "Result__urlDisplay" ] [ text response.url ]
-        , p [] [ text ("Status: " ++ toString response.status.code) ]
+    div [ class "api-res-form__response" ]
+        [ h3 [] [ text "Response" ]
+        , p [] [ span [ class "api-res-form__label" ] [ text ("Status: " ++ toString response.status.code) ] ]
         , p [] [ text response.status.message ]
+        , p [] [ span [ class "api-res-form__label" ] [ text ("Date: display date here") ] ]
+        , ul [ class "nav nav-tabs api-res__req-tabs" ]
+            [ li [ class "active" ] [ a [] [ text "Body" ] ]
+            , li [ class "" ] [ a [] [ text "Headers" ] ]
+            ]
         ]
 
 
@@ -141,6 +153,13 @@ responseMarkup response =
     in
         div []
             [ httpStatusMarkup response.raw
-            , div [ class "Result__jsonView" ] [ JsonViewer.view rootNode ]
+            , div [ class "Result__jsonView" ]
+                [ a [ class "btn" ] [ text "View raw" ]
+                , pre [ class "api-res__res" ]
+                    [ span [ class "block" ]
+                        [ JsonViewer.view rootNode
+                        ]
+                    ]
+                ]
             , httpRawResponseMarkup response.raw
             ]

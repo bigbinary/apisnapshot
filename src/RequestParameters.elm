@@ -111,10 +111,11 @@ remove index requestParameters =
 
 itemView : Int -> RequestParameter -> Html Msg
 itemView index requestParameter =
-    li [ attribute "data-param-id" (toString index) ]
+    div [ class "api-req-form__form-inline form-inline", attribute "data-param-id" (toString index) ]
         [ input
             [ type_ "text"
             , placeholder "Enter Name"
+            , class "input form-control api-req-form__input"
             , value requestParameter.name
             , onInput (Msgs.ChangeRequestParameterName index)
             ]
@@ -122,6 +123,7 @@ itemView index requestParameter =
         , input
             [ type_ "text"
             , placeholder "Enter Value"
+            , class "input form-control api-req-form__input"
             , value requestParameter.value
             , onInput (Msgs.ChangeRequestParameterValue index)
             ]

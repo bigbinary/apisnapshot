@@ -8,30 +8,11 @@ embed : model -> Html msg -> Html msg
 embed _ view =
     div []
         [ nav
-        , div [ class "container-fluid page" ]
-            [ div [ class "row" ] [ view ]
-            ]
+        , div [ class "container-fluid api-req-form__container" ] [ view ]
         ]
 
 
 nav : Html msg
 nav =
-    div [ class "navbar navbar-default navbar-static-top" ]
-        [ div [ class "container-fluid" ]
-            [ div [ class "navbar-header" ]
-                [ a
-                    [ class "navbar-brand"
-                    , href "#"
-                    ]
-                    [ text "ApiSanity" ]
-                ]
-            , div [ class "navbar-collapse collapse" ]
-                [ ul [ class "nav navbar-nav navbar-right" ]
-                    [ li []
-                        [ a [ href "#preferences" ]
-                            [ text "Preferences" ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
+    div []
+        [ a [ href "#preferences" ] [ text "Preferences" ] ]
