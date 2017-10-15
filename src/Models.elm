@@ -37,11 +37,16 @@ type alias FirebaseConfig =
     }
 
 
-type alias Model =
+type alias Request =
     { url : String
-    , error : Maybe String
+    , urlError : Maybe String
     , httpMethod : HttpMethod
     , requestParameters : RequestParameters
+    }
+
+
+type alias Model =
+    { request : Request
     , pageState : PageState
     , route : Route
     , firebaseConfig : LocalStorageData String FirebaseConfig

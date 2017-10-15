@@ -2,11 +2,11 @@ module Main exposing (..)
 
 import HttpMethods exposing (HttpMethod(..))
 import LocalStorageData exposing (..)
-import Models exposing (FirebaseConfig, Model, PageState(..), firebaseConfigLocalStorageKey)
+import Models exposing (FirebaseConfig, Model, Request, PageState(..), firebaseConfigLocalStorageKey)
 import Msgs exposing (Msg)
 import Navigation exposing (Location)
 import Ports exposing (..)
-import Pages.Hit.RequestParameters exposing (empty)
+import Pages.Hit.RequestParameters
 import Router exposing (..)
 import Update exposing (update)
 import Models exposing (Model)
@@ -22,10 +22,7 @@ import Html.Attributes exposing (class, href)
 
 initialModel : Route -> Model
 initialModel route =
-    { url = "https://swapi.co/api/people/1/"
-    , error = Nothing
-    , httpMethod = Get
-    , requestParameters = empty
+    { request = Request "https://swapi.co/api/people/1/" Nothing Get Pages.Hit.RequestParameters.empty
     , pageState = Empty
     , route = route
     , firebaseConfig = LocalStorageData.Loading

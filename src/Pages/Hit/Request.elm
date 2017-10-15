@@ -16,6 +16,7 @@ view model =
     div [ class "row form-controls text-center" ] [ formView model ]
 
 
+formView : Model -> Html Msg
 formView model =
     Html.form
         [ class "bootstrap-center-form api-req-form__form"
@@ -23,7 +24,7 @@ formView model =
         , action "javascript:void(0)"
         ]
         [ div [ class "api-req-form__url-group" ]
-            [ httpMethodDropdown model.httpMethod
+            [ httpMethodDropdown model.request.httpMethod
             , urlInputField model
             , morePullDownMenu
             , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
@@ -32,6 +33,7 @@ formView model =
         ]
 
 
+urlInputField : Model -> Html Msg
 urlInputField model =
     div [ class "api-req-form__url-control" ]
         [ input
@@ -40,19 +42,20 @@ urlInputField model =
             , type_ "text"
             , placeholder "Enter url here"
             , onInput Msgs.ChangeUrl
-            , value model.url
+            , value model.request.url
             ]
             []
         , urlEmptyErrorMessage model
         ]
 
 
+classForUrlField : Model -> String
 classForUrlField model =
     let
         defaultClass =
             "input form-control required"
     in
-        case model.error of
+        case model.request.urlError of
             Nothing ->
                 defaultClass
 
@@ -60,8 +63,9 @@ classForUrlField model =
                 defaultClass ++ " is-invalid"
 
 
+urlEmptyErrorMessage : Model -> Html Msg
 urlEmptyErrorMessage model =
-    case model.error of
+    case model.request.urlError of
         Nothing ->
             span [] []
 
@@ -92,10 +96,10 @@ morePullDownMenu =
 
 
 requestParametersView model =
-    if Array.isEmpty model.requestParameters then
+    if Array.isEmpty model.request.requestParameters then
         text ""
     else
-        Pages.Hit.RequestParameters.view model.requestParameters
+        Pages.Hit.RequestParameters.view model.request.requestParameters
 
 
 httpMethodDropdown : HttpMethod -> Html Msg

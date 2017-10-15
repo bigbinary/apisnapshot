@@ -19,10 +19,10 @@ requestCommand : Model -> Cmd Msg
 requestCommand model =
     let
         encodedUrl =
-            HttpUtil.encodeUrl model.url model.requestParameters
+            HttpUtil.encodeUrl model.request.url model.request.requestParameters
 
         request =
-            HttpUtil.buildRequest encodedUrl model.httpMethod
+            HttpUtil.buildRequest encodedUrl model.request.httpMethod
     in
         Http.send Msgs.ResponseAvailable request
 
@@ -41,13 +41,16 @@ updateModelWithResponse model httpResponse =
 
 
 updateErrorResponse : Model -> Http.Error -> Model
-updateErrorResponse model error =
-    { model | pageState = Error error }
+updateErrorResponse model httpError =
+    { model | pageState = Error httpError }
 
 
 changeUrl : Model -> String -> Model
 changeUrl model newUrl =
     let
+        currentRequest =
+            model.request
+
         isUrlEmpty =
             newUrl |> String.trim |> String.isEmpty
 
@@ -56,8 +59,11 @@ changeUrl model newUrl =
                 Just "Please enter a url"
             else
                 Nothing
+
+        newRequest =
+            { currentRequest | url = newUrl, urlError = error }
     in
-        { model | url = newUrl, error = error }
+        { model | request = newRequest }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -69,7 +75,7 @@ update msg model =
             )
 
         Msgs.Submit ->
-            case model.error of
+            case model.request.urlError of
                 Just _ ->
                     ( model, Cmd.none )
 
@@ -108,25 +114,66 @@ update msg model =
                     ( model, Cmd.none )
 
         Msgs.AddRequestParameter ->
-            ( { model | requestParameters = pushBlank model.requestParameters }
-            , Cmd.none
-            )
+            let
+                newRequestParameters =
+                    pushBlank model.request.requestParameters
+
+                currentRequest =
+                    model.request
+
+                newRequest =
+                    { currentRequest | requestParameters = newRequestParameters }
+            in
+                ( { model | request = newRequest }, Cmd.none )
 
         Msgs.ChangeRequestParameterName index newName ->
-            ( { model | requestParameters = updateName index newName model.requestParameters }
-            , Cmd.none
-            )
+            let
+                currentRequest =
+                    model.request
+
+                newRequestParameters =
+                    updateName index newName model.request.requestParameters
+
+                newRequest =
+                    { currentRequest | requestParameters = newRequestParameters }
+            in
+                ( { model | request = newRequest }, Cmd.none )
 
         Msgs.ChangeRequestParameterValue index newValue ->
-            ( { model | requestParameters = updateValue index newValue model.requestParameters }
-            , Cmd.none
-            )
+            let
+                currentRequest =
+                    model.request
+
+                newRequestParameters =
+                    updateValue index newValue model.request.requestParameters
+
+                newRequest =
+                    { currentRequest | requestParameters = newRequestParameters }
+            in
+                ( { model | request = newRequest }, Cmd.none )
 
         Msgs.DeleteRequestParameter index ->
-            ( { model | requestParameters = remove index model.requestParameters }, Cmd.none )
+            let
+                currentRequest =
+                    model.request
+
+                newRequestParameters =
+                    remove index model.request.requestParameters
+
+                newRequest =
+                    { currentRequest | requestParameters = newRequestParameters }
+            in
+                ( { model | request = newRequest }, Cmd.none )
 
         Msgs.HttpMethodsDropdownChange selectedHttpMethodString ->
-            ( { model | httpMethod = parse selectedHttpMethodString }, Cmd.none )
+            let
+                currentRequest =
+                    model.request
+
+                newRequest =
+                    { currentRequest | httpMethod = parse selectedHttpMethodString }
+            in
+                ( { model | request = newRequest }, Cmd.none )
 
         Msgs.OnLocationChange location ->
             let

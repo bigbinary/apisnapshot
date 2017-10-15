@@ -60,8 +60,8 @@ bodyMarkup response =
 
 
 errorMarkup : Http.Error -> Html msg
-errorMarkup error =
-    case error of
+errorMarkup httpError =
+    case httpError of
         Http.BadUrl url ->
             p [ class "Error" ] [ text ("Bad Url! " ++ url) ]
 
