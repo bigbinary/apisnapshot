@@ -111,35 +111,41 @@ remove index requestParameters =
 
 itemView : Int -> RequestParameter -> Html Msg
 itemView index requestParameter =
-    div [ class "api-req-form__form-inline form-inline", attribute "data-param-id" (toString index) ]
-        [ input
-            [ type_ "text"
-            , placeholder "Enter Name"
-            , class "input form-control api-req-form__input"
-            , value requestParameter.name
-            , onInput (Msgs.ChangeRequestParameterName index)
+    div [ class "form-row", attribute "data-param-id" (toString index) ]
+        [ div [ class "col" ]
+            [ input
+                [ type_ "text"
+                , placeholder "Enter Name"
+                , class "input form-control api-req-form__input"
+                , value requestParameter.name
+                , onInput (Msgs.ChangeRequestParameterName index)
+                ]
+                []
             ]
-            []
-        , input
-            [ type_ "text"
-            , placeholder "Enter Value"
-            , class "input form-control api-req-form__input"
-            , value requestParameter.value
-            , onInput (Msgs.ChangeRequestParameterValue index)
+        , div [ class "col" ]
+            [ input
+                [ type_ "text"
+                , placeholder "Enter Value"
+                , class "input form-control api-req-form__input"
+                , value requestParameter.value
+                , onInput (Msgs.ChangeRequestParameterValue index)
+                ]
+                []
             ]
-            []
-        , a
-            [ href "javascript:void(0)"
-            , class "RequestParameters__delete"
-            , onClick (Msgs.DeleteRequestParameter index)
+        , div [ class "col" ]
+            [ a
+                [ href "javascript:void(0)"
+                , class "RequestParameters__delete"
+                , onClick (Msgs.DeleteRequestParameter index)
+                ]
+                [ text "×" ]
             ]
-            [ text "×" ]
         ]
 
 
 fields : RequestParameters -> Html Msg
 fields requestParameters =
-    div [ class "aapi-req-form__form-inline form-inline" ]
+    div [ class "aapi-req-form__form-inline" ]
         (requestParameters
             |> Array.toIndexedList
             |> List.map (\( index, requestParameter ) -> itemView index requestParameter)

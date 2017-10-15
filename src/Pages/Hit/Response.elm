@@ -4,7 +4,6 @@ import Msgs exposing (Msg)
 import JsonViewer
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Http
 import Models
 
@@ -26,6 +25,21 @@ view model =
 
 responseMarkup : Models.Response -> Html Msg
 responseMarkup response =
+    div []
+        [ httpStatusMarkup response.raw
+        , div [ class "tab-content", id "nav-tabContent" ]
+            [ headersMarkup response
+            , bodyMarkup response
+            ]
+        ]
+
+
+headersMarkup response =
+    div [ class "tab-pane fade", id "response-headers" ]
+        [ text "this is headers" ]
+
+
+bodyMarkup response =
     let
         rootNode =
             { jsonVal = response.json
@@ -34,14 +48,11 @@ responseMarkup response =
             , collapsedNodePaths = response.collapsedNodePaths
             }
     in
-        div []
-            [ httpStatusMarkup response.raw
-            , div []
-                [ a [ class "btn" ] [ text "View raw" ]
-                , pre [ class "api-res__res" ]
-                    [ span [ class "block" ]
-                        [ JsonViewer.view rootNode
-                        ]
+        div [ class "tab-pane fade show active", id "response-body" ]
+            [ a [ class "btn" ] [ text "View raw" ]
+            , pre [ class "api-res__res" ]
+                [ span [ class "block" ]
+                    [ JsonViewer.view rootNode
                     ]
                 ]
             , httpRawResponseMarkup response.raw
@@ -80,10 +91,28 @@ httpStatusMarkup response =
         , p [] [ span [ class "api-res-form__label" ] [ text ("Status: " ++ toString response.status.code) ] ]
         , p [] [ text response.status.message ]
         , p [] [ span [ class "api-res-form__label" ] [ text ("Date: display date here") ] ]
-        , ul [ class "nav nav-tabs api-res__req-tabs" ]
-            [ li [ class "active" ] [ a [] [ text "Body" ] ]
-            , li [ class "" ] [ a [] [ text "Headers" ] ]
+        , bodyHeadersRow
+        ]
+
+
+bodyHeadersRow =
+    nav [ class "nav nav-tabs api-res__req-tabs", id "body-headers", attribute "role" "bodyheaderslist" ]
+        [ a
+            [ class "nav-item nav-link active"
+            , id "response-body-tab"
+            , attribute "data-toggle" "tab"
+            , href "#response-body"
+            , attribute "role" "tab"
             ]
+            [ text "Body" ]
+        , a
+            [ class "nav-item nav-link"
+            , id "response-headers-tab"
+            , attribute "data-toggle" "tab"
+            , href "#response-headers"
+            , attribute "role" "tab"
+            ]
+            [ text "Headers" ]
         ]
 
 
