@@ -6,6 +6,7 @@ import JsonViewer
 import LocalStorageData exposing (..)
 import Pages.Hit.RequestParameters exposing (RequestParameters)
 import Router exposing (..)
+import Tuple
 
 
 firebaseConfigLocalStorageKey : String
@@ -17,6 +18,7 @@ type alias Response =
     { raw : Http.Response String
     , collapsedNodePaths : JsonViewer.CollapsedNodePaths
     , json : JsonViewer.JsonView
+    , headers : List ( String, String )
     }
 
 

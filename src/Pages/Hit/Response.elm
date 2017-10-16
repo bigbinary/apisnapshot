@@ -34,11 +34,13 @@ responseMarkup response =
         ]
 
 
+headersMarkup : Models.Response -> Html Msg
 headersMarkup response =
     div [ class "tab-pane fade", id "response-headers" ]
-        [ text "this is headers" ]
+        [ text (toString response.headers) ]
 
 
+bodyMarkup : Models.Response -> Html Msg
 bodyMarkup response =
     let
         rootNode =

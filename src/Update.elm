@@ -13,6 +13,7 @@ import Set
 import HttpUtil
 import Http
 import HttpMethods exposing (parse)
+import Dict
 
 
 requestCommand : Model -> Cmd Msg
@@ -36,8 +37,14 @@ updateModelWithResponse model httpResponse =
                 , collapsedNodePaths = Set.empty
                 , json =
                     JsonViewer.fromJSVal (HttpUtil.parseResponseBodyToJson httpResponse)
+                , headers = parseRespondeHeadersToJson httpResponse
                 }
     }
+
+
+parseRespondeHeadersToJson : Http.Response String -> List ( String, String )
+parseRespondeHeadersToJson httpResponse =
+    Dict.toList httpResponse.headers
 
 
 updateErrorResponse : Model -> Http.Error -> Model
