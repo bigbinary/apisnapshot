@@ -1,6 +1,6 @@
 module Pages.Hit.Request exposing (..)
 
-import Array
+import Dict exposing (Dict)
 import Json.Decode
 import HttpMethods exposing (HttpMethod, avaialableHttpMethodsString)
 import Msgs exposing (Msg)
@@ -17,19 +17,19 @@ view model =
 
 
 formView : Model -> Html Msg
-formView model =
+formView ({ request } as model) =
     Html.form
         [ class "bootstrap-center-form api-req-form__form"
         , onSubmit Msgs.Submit
         , action "javascript:void(0)"
         ]
         [ div [ class "api-req-form__url-group" ]
-            [ httpMethodDropdown model.request.httpMethod
+            [ httpMethodDropdown request.httpMethod
             , urlInputField model
             , morePullDownMenu
             , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
             ]
-        , requestParametersView model
+        , requestParametersView request
         ]
 
 
@@ -95,11 +95,11 @@ morePullDownMenu =
         ]
 
 
-requestParametersView model =
-    if Array.isEmpty model.request.requestParameters then
+requestParametersView { requestParameters } =
+    if Dict.isEmpty requestParameters then
         text ""
     else
-        Pages.Hit.RequestParameters.view model.request.requestParameters
+        Pages.Hit.RequestParameters.view requestParameters
 
 
 httpMethodDropdown : HttpMethod -> Html Msg

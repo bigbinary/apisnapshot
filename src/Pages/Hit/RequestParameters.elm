@@ -9,8 +9,7 @@ module Pages.Hit.RequestParameters
         , view
         )
 
-import Array
-import Array.Extra
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -26,8 +25,12 @@ type alias RequestParameter =
     }
 
 
+type alias Position =
+    Int
+
+
 type alias RequestParameters =
-    Array.Array RequestParameter
+    Dict Position RequestParameter
 
 
 
@@ -36,14 +39,12 @@ type alias RequestParameters =
 
 blankRequestParameter : RequestParameter
 blankRequestParameter =
-    { name = ""
-    , value = ""
-    }
+    RequestParameter "" ""
 
 
 empty : RequestParameters
 empty =
-    Array.empty
+    Dict.empty
 
 
 
@@ -57,68 +58,72 @@ pushBlank requestParameters =
 
 push : RequestParameter -> RequestParameters -> RequestParameters
 push requestParameter requestParameters =
-    Array.push requestParameter requestParameters
+    Dict.insert (Dict.size requestParameters) requestParameter requestParameters
 
 
-updateName : Int -> String -> RequestParameters -> RequestParameters
-updateName index newName requestParameters =
+updateName : Position -> String -> RequestParameters -> RequestParameters
+updateName position newName requestParameters =
     let
-        item =
-            Array.get index requestParameters
+        requestParameter =
+            Dict.get position requestParameters
 
-        updatedItem =
-            case item of
-                Just item_ ->
-                    { item_ | name = newName }
+        newRequestParam =
+            case requestParameter of
+                Just requestParam_ ->
+                    { requestParam_ | name = newName }
 
                 Nothing ->
-                    blankRequestParameter
-
-        updatedRequestedParameters =
-            Array.set index updatedItem requestParameters
+                    RequestParameter newName ""
     in
-        updatedRequestedParameters
+        updateParam position newRequestParam requestParameters
 
 
-updateValue : Int -> String -> RequestParameters -> RequestParameters
-updateValue index newValue requestParameters =
+updateValue : Position -> String -> RequestParameters -> RequestParameters
+updateValue position newValue requestParameters =
     let
-        item =
-            Array.get index requestParameters
+        requestParameter =
+            Dict.get position requestParameters
 
-        updatedItem =
-            case item of
-                Just item_ ->
-                    { item_ | value = newValue }
+        newRequestParam =
+            case requestParameter of
+                Just requestParam_ ->
+                    { requestParam_ | value = newValue }
 
                 Nothing ->
-                    blankRequestParameter
-
-        updatedRequestedParameters =
-            Array.set index updatedItem requestParameters
+                    RequestParameter newValue ""
     in
-        updatedRequestedParameters
+        updateParam position newRequestParam requestParameters
 
 
-remove : Int -> RequestParameters -> RequestParameters
-remove index requestParameters =
-    Array.Extra.removeAt index requestParameters
+updateParam : Position -> RequestParameter -> RequestParameters -> RequestParameters
+updateParam position newRequestParam requestParameters =
+    Dict.update position (\_ -> Just newRequestParam) requestParameters
+
+
+remove : Position -> RequestParameters -> RequestParameters
+remove position requestParameters =
+    Dict.remove position requestParameters
+        |> Dict.foldl
+            (\_ requestParameter newRequestParams ->
+                Dict.insert (Dict.size newRequestParams) requestParameter newRequestParams
+            )
+            Dict.empty
 
 
 
 -- VIEW --
 
 
-itemView : Int -> RequestParameter -> Html Msg
-itemView index requestParameter =
-    div [ class "form-row", attribute "data-param-id" (toString index) ]
+viewRequestParameter : Position -> RequestParameter -> Html Msg
+viewRequestParameter position requestParameter =
+    div [ class "form-row" ]
         [ div [ class "col" ]
             [ input
                 [ type_ "text"
                 , placeholder "Enter Name"
                 , class "input form-control api-req-form__input"
                 , value requestParameter.name
-                , onInput (Msgs.ChangeRequestParameterName index)
+                , onInput (Msgs.ChangeRequestParameterName position)
                 ]
                 []
             ]
@@ -128,7 +133,7 @@ itemView index requestParameter =
                 , placeholder "Enter Value"
                 , class "input form-control api-req-form__input"
                 , value requestParameter.value
-                , onInput (Msgs.ChangeRequestParameterValue index)
+                , onInput (Msgs.ChangeRequestParameterValue position)
                 ]
                 []
             ]
@@ -136,19 +141,20 @@ itemView index requestParameter =
             [ a
                 [ href "javascript:void(0)"
                 , class "RequestParameters__delete"
-                , onClick (Msgs.DeleteRequestParameter index)
+                , onClick (Msgs.DeleteRequestParameter position)
                 ]
                 [ text "×" ]
             ]
         ]
 
 
-fields : RequestParameters -> Html Msg
-fields requestParameters =
+viewRequestParameters : RequestParameters -> Html Msg
+viewRequestParameters requestParameters =
     div [ class "aapi-req-form__form-inline" ]
         (requestParameters
-            |> Array.toIndexedList
-            |> List.map (\( index, requestParameter ) -> itemView index requestParameter)
+            |> Dict.map viewRequestParameter
+            |> Dict.toList
+            |> List.map (\( _, viewRequestParameter ) -> viewRequestParameter)
         )
 
 
@@ -159,5 +165,5 @@ view requestParameters =
             [ span [] [ text "Request Parameters" ]
             , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestParameter ] [ text "Add Parameter" ]
             ]
-        , fields requestParameters
+        , viewRequestParameters requestParameters
         ]

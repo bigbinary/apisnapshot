@@ -1,19 +1,19 @@
 module HttpUtil exposing (..)
 
+import Dict exposing (Dict)
 import JSVal
 import Json.Decode
 import Http
 import HttpMethods exposing (HttpMethod, parse, toString)
-import Array
 import Pages.Hit.RequestParameters exposing (..)
 
 
 encodeUrl : String -> RequestParameters -> String
 encodeUrl url requestParameters =
     requestParameters
-        |> Array.filter (\parameter -> parameter.name /= "")
-        |> Array.map (\parameter -> Http.encodeUri parameter.name ++ "=" ++ Http.encodeUri parameter.value)
-        |> Array.toList
+        |> Dict.values
+        |> List.filter (\{ name } -> name /= "")
+        |> List.map (\{ name, value } -> Http.encodeUri name ++ "=" ++ Http.encodeUri value)
         |> String.join "&"
         |> (++) (url ++ "?")
 
