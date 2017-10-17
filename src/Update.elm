@@ -110,12 +110,22 @@ update msg model =
                 ( newModel, Cmd.none )
 
         Msgs.Submit ->
-            case model.request.urlError of
-                Just _ ->
-                    ( model, Cmd.none )
+            let
+                validUrl =
+                    case model.request.urlError of
+                        Just _ ->
+                            False
 
-                Nothing ->
+                        Nothing ->
+                            True
+
+                shouldSubmit =
+                    validUrl && valid model.request.requestParameters
+            in
+                if shouldSubmit then
                     ( { model | pageState = Models.Loading }, requestCommand model )
+                else
+                    ( model, Cmd.none )
 
         Msgs.ResponseAvailable (Ok value) ->
             ( updateModelWithResponse model value, Cmd.none )

@@ -3,9 +3,10 @@ module Pages.Hit.RequestParameters
         ( RequestParameters
         , empty
         , pushBlank
+        , remove
         , updateName
         , updateValue
-        , remove
+        , valid
         , view
         )
 
@@ -117,16 +118,7 @@ remove position requestParameters =
 viewRequestParameter : Position -> RequestParameter -> Html Msg
 viewRequestParameter position requestParameter =
     div [ class "form-row" ]
-        [ div [ class "col" ]
-            [ input
-                [ type_ "text"
-                , placeholder "Enter Name"
-                , class "input form-control api-req-form__input"
-                , value requestParameter.name
-                , onInput (Msgs.ChangeRequestParameterName position)
-                ]
-                []
-            ]
+        [ viewRequestParameterName position requestParameter
         , div [ class "col" ]
             [ input
                 [ type_ "text"
@@ -148,6 +140,38 @@ viewRequestParameter position requestParameter =
         ]
 
 
+viewRequestParameterName : Position -> RequestParameter -> Html Msg
+viewRequestParameterName position { name } =
+    let
+        defaultClass =
+            "input form-control api-req-form__input"
+
+        updatedClass =
+            if present name then
+                defaultClass
+            else
+                defaultClass ++ " is-invalid"
+
+        viewValidationError =
+            if present name then
+                text ""
+            else
+                div [ class "invalid-feedback" ]
+                    [ text "Cannot be empty" ]
+    in
+        div [ class "col" ]
+            [ input
+                [ type_ "text"
+                , placeholder "Enter Name"
+                , class updatedClass
+                , value name
+                , onInput (Msgs.ChangeRequestParameterName position)
+                ]
+                []
+            , viewValidationError
+            ]
+
+
 viewRequestParameters : RequestParameters -> Html Msg
 viewRequestParameters requestParameters =
     div [ class "aapi-req-form__form-inline" ]
@@ -167,3 +191,21 @@ view requestParameters =
             ]
         , viewRequestParameters requestParameters
         ]
+
+
+
+-- UTILITY FUNCTIONS
+
+
+valid : RequestParameters -> Bool
+valid requestParameters =
+    requestParameters
+        |> Dict.values
+        |> List.map (\{ name } -> present name)
+        |> List.member False
+        |> not
+
+
+present : String -> Bool
+present value =
+    value |> String.trim |> String.isEmpty |> not
