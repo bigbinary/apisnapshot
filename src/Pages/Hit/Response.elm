@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Models
+import Html.Events exposing (..)
 
 
 view model =
@@ -20,28 +21,43 @@ view model =
             errorMarkup error
 
         Models.Loaded response ->
-            responseMarkup response
+            loadedMarkup response
 
 
-responseMarkup : Models.Response -> Html Msg
-responseMarkup response =
+loadedMarkup : Models.Response -> Html Msg
+loadedMarkup response =
     div []
         [ httpStatusMarkup response.raw
+        , bodyHeadersNavBar
         , div [ class "tab-content", id "nav-tabContent" ]
-            [ headersMarkup response
-            , bodyMarkup response
+            [ headersTabMarkup response
+            , bodyTabMarkup response
             ]
         ]
 
 
-headersMarkup : Models.Response -> Html Msg
-headersMarkup response =
+headersTabMarkup : Models.Response -> Html Msg
+headersTabMarkup response =
     div [ class "tab-pane fade", id "response-headers" ]
         [ text (toString response.headers) ]
 
 
-bodyMarkup : Models.Response -> Html Msg
-bodyMarkup response =
+bodyTabMarkup : Models.Response -> Html Msg
+bodyTabMarkup response =
+    div [ class "tab-pane fade show active", id "response-body" ]
+        [ formattedOrRawView response ]
+
+
+formattedOrRawView : Models.Response -> Html Msg
+formattedOrRawView response =
+    if response.viewing == Models.Raw then
+        rawResponseMarkup response.raw
+    else
+        formattedResponseMarkup response
+
+
+formattedResponseMarkup : Models.Response -> Html Msg
+formattedResponseMarkup response =
     let
         rootNode =
             { jsonVal = response.json
@@ -50,18 +66,15 @@ bodyMarkup response =
             , collapsedNodePaths = response.collapsedNodePaths
             }
     in
-        div [ class "tab-pane fade show active", id "response-body" ]
-            [ a [ class "btn" ] [ text "View raw" ]
+        h5 []
+            [ text "Formatted response"
+            , a [ class "btn", href "#", onClick Msgs.ShowRawResponse ] [ text "switch to raw response" ]
             , pre [ class "api-res__res" ]
-                [ span [ class "block" ]
-                    [ JsonViewer.view rootNode
-                    ]
-                ]
-            , httpRawResponseMarkup response.raw
+                [ span [ class "block" ] [ JsonViewer.view rootNode ] ]
             ]
 
 
-errorMarkup : Http.Error -> Html msg
+errorMarkup : Http.Error -> Html Msg
 errorMarkup httpError =
     case httpError of
         Http.BadUrl url ->
@@ -80,10 +93,13 @@ errorMarkup httpError =
             div [] [ p [ class "Error" ] [ text ("Bad payload error: " ++ message) ], httpErrorMarkup response ]
 
 
-httpErrorMarkup : Http.Response String -> Html msg
+httpErrorMarkup : Http.Response String -> Html Msg
 httpErrorMarkup response =
     div [ class "" ]
-        [ httpStatusMarkup response, httpRawResponseMarkup response ]
+        [ httpStatusMarkup response
+        , bodyHeadersNavBar
+        , rawResponseMarkup response
+        ]
 
 
 httpStatusMarkup : Http.Response String -> Html msg
@@ -93,11 +109,11 @@ httpStatusMarkup response =
         , p [] [ span [ class "api-res-form__label" ] [ text ("Status: " ++ toString response.status.code) ] ]
         , p [] [ text response.status.message ]
         , p [] [ span [ class "api-res-form__label" ] [ text ("Date: display date here") ] ]
-        , bodyHeadersRow
         ]
 
 
-bodyHeadersRow =
+bodyHeadersNavBar : Html msg
+bodyHeadersNavBar =
     nav [ class "nav nav-tabs api-res__req-tabs", id "body-headers", attribute "role" "bodyheaderslist" ]
         [ a
             [ class "nav-item nav-link active"
@@ -118,9 +134,12 @@ bodyHeadersRow =
         ]
 
 
-httpRawResponseMarkup : Http.Response String -> Html msg
-httpRawResponseMarkup response =
+rawResponseMarkup : Http.Response String -> Html Msg
+rawResponseMarkup response =
     div []
-        [ h3 [] [ text "Raw Response Body" ]
-        , pre [] [ code [] [ text response.body ] ]
+        [ h5 []
+            [ text "Raw Response"
+            , a [ class "btn", href "#", onClick Msgs.ShowFormattedResponse ] [ text "switch to formatted response" ]
+            ]
+        , textarea [ class "form-control" ] [ text response.body ]
         ]

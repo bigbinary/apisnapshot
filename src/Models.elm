@@ -14,11 +14,17 @@ firebaseConfigLocalStorageKey =
     "firebaseConfig"
 
 
+type ResponseViewing
+    = Formatted
+    | Raw
+
+
 type alias Response =
     { raw : Http.Response String
     , collapsedNodePaths : JsonViewer.CollapsedNodePaths
     , json : JsonViewer.JsonView
     , headers : List ( String, String )
+    , viewing : ResponseViewing
     }
 
 

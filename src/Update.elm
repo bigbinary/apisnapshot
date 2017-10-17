@@ -30,16 +30,16 @@ requestCommand model =
 
 updateModelWithResponse : Model -> Http.Response String -> Model
 updateModelWithResponse model httpResponse =
-    { model
-        | pageState =
-            Loaded
-                { raw = httpResponse
-                , collapsedNodePaths = Set.empty
-                , json =
-                    JsonViewer.fromJSVal (HttpUtil.parseResponseBodyToJson httpResponse)
-                , headers = parseRespondeHeadersToJson httpResponse
-                }
-    }
+    let
+        response =
+            { raw = httpResponse
+            , collapsedNodePaths = Set.empty
+            , json = JsonViewer.fromJSVal (HttpUtil.parseResponseBodyToJson httpResponse)
+            , headers = parseRespondeHeadersToJson httpResponse
+            , viewing = Models.Formatted
+            }
+    in
+        { model | pageState = Loaded response }
 
 
 parseRespondeHeadersToJson : Http.Response String -> List ( String, String )
@@ -73,6 +73,20 @@ changeUrl model newUrl =
         { model | request = newRequest }
 
 
+updateModelWithViewingStatus : Model -> Models.ResponseViewing -> Model
+updateModelWithViewingStatus model viewing =
+    case model.pageState of
+        Models.Loaded response ->
+            let
+                newPageState =
+                    Models.Loaded { response | viewing = viewing }
+            in
+                { model | pageState = newPageState }
+
+        _ ->
+            model
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -80,6 +94,20 @@ update msg model =
             ( changeUrl model newUrl
             , Cmd.none
             )
+
+        Msgs.ShowRawResponse ->
+            let
+                newModel =
+                    updateModelWithViewingStatus model Models.Raw
+            in
+                ( newModel, Cmd.none )
+
+        Msgs.ShowFormattedResponse ->
+            let
+                newModel =
+                    updateModelWithViewingStatus model Models.Formatted
+            in
+                ( newModel, Cmd.none )
 
         Msgs.Submit ->
             case model.request.urlError of

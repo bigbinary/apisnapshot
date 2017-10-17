@@ -19,6 +19,8 @@ type Msg
     | OnLocalStorageSet String
     | OnLocalStorageGet String
     | PreferencesMsg PreferencesMsg
+    | ShowRawResponse
+    | ShowFormattedResponse
 
 
 type PreferencesMsg
