@@ -67,15 +67,15 @@ updateName position newName requestParameters =
         requestParameter =
             Dict.get position requestParameters
 
-        newRequestParam =
+        newRequestParameter =
             case requestParameter of
-                Just requestParam_ ->
-                    { requestParam_ | name = newName }
+                Just requestParameter_ ->
+                    { requestParameter_ | name = newName }
 
                 Nothing ->
                     RequestParameter newName ""
     in
-        updateParam position newRequestParam requestParameters
+        updateRequestParameter position newRequestParameter requestParameters
 
 
 updateValue : Position -> String -> RequestParameters -> RequestParameters
@@ -84,28 +84,28 @@ updateValue position newValue requestParameters =
         requestParameter =
             Dict.get position requestParameters
 
-        newRequestParam =
+        newRequestParameter =
             case requestParameter of
-                Just requestParam_ ->
-                    { requestParam_ | value = newValue }
+                Just requestParameter_ ->
+                    { requestParameter_ | value = newValue }
 
                 Nothing ->
                     RequestParameter newValue ""
     in
-        updateParam position newRequestParam requestParameters
+        updateRequestParameter position newRequestParameter requestParameters
 
 
-updateParam : Position -> RequestParameter -> RequestParameters -> RequestParameters
-updateParam position newRequestParam requestParameters =
-    Dict.update position (\_ -> Just newRequestParam) requestParameters
+updateRequestParameter : Position -> RequestParameter -> RequestParameters -> RequestParameters
+updateRequestParameter position newRequestParameter requestParameters =
+    Dict.update position (\_ -> Just newRequestParameter) requestParameters
 
 
 remove : Position -> RequestParameters -> RequestParameters
 remove position requestParameters =
     Dict.remove position requestParameters
         |> Dict.foldl
-            (\_ requestParameter newRequestParams ->
-                Dict.insert (Dict.size newRequestParams) requestParameter newRequestParams
+            (\_ requestParameter newRequestParameters ->
+                Dict.insert (Dict.size newRequestParameters) requestParameter newRequestParameters
             )
             Dict.empty
 
