@@ -12,6 +12,7 @@ import HttpUtil
 import Http
 import HttpMethods exposing (parse)
 import Dict
+import Util exposing (isMaybeValuePresent, isStringEmpty)
 
 
 requestCommand : Model -> Cmd Msg
@@ -56,11 +57,8 @@ changeUrl model newUrl =
         currentRequest =
             model.request
 
-        isUrlEmpty =
-            newUrl |> String.trim |> String.isEmpty
-
         error =
-            if isUrlEmpty then
+            if isStringEmpty newUrl then
                 Just "Please enter a url"
             else
                 Nothing
@@ -109,16 +107,8 @@ update msg model =
 
         Msgs.Submit ->
             let
-                validUrl =
-                    case model.request.urlError of
-                        Just _ ->
-                            False
-
-                        Nothing ->
-                            True
-
                 shouldSubmit =
-                    validUrl && valid model.request.requestParameters
+                    isMaybeValuePresent model.request.urlError && valid model.request.requestParameters
             in
                 if shouldSubmit then
                     ( { model | pageState = Models.Loading }, requestCommand model )

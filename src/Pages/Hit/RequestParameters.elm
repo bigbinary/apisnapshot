@@ -15,6 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Msgs exposing (Msg)
+import Util exposing (isStringPresent)
 
 
 -- TYPES --
@@ -147,13 +148,13 @@ viewRequestParameterName position { name } =
             "input form-control api-req-form__input"
 
         updatedClass =
-            if present name then
+            if isStringPresent name then
                 defaultClass
             else
                 defaultClass ++ " is-invalid"
 
         viewValidationError =
-            if present name then
+            if isStringPresent name then
                 text ""
             else
                 div [ class "invalid-feedback" ]
@@ -201,11 +202,6 @@ valid : RequestParameters -> Bool
 valid requestParameters =
     requestParameters
         |> Dict.values
-        |> List.map (\{ name } -> present name)
+        |> List.map (\{ name } -> isStringPresent name)
         |> List.member False
         |> not
-
-
-present : String -> Bool
-present value =
-    value |> String.trim |> String.isEmpty |> not
