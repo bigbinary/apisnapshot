@@ -1,11 +1,9 @@
 module Main exposing (..)
 
 import HttpMethods exposing (HttpMethod(..))
-import LocalStorageData exposing (..)
-import Models exposing (FirebaseConfig, Model, Request, PageState(..), firebaseConfigLocalStorageKey)
+import Models exposing (Model, Request, PageState(..))
 import Msgs exposing (Msg)
 import Navigation exposing (Location)
-import Ports exposing (..)
 import Pages.Hit.RequestParameters
 import Router exposing (..)
 import Update exposing (update)
@@ -25,14 +23,7 @@ initialModel route =
     { request = Request "https://swapi.co/api/people/1/" Nothing Get Pages.Hit.RequestParameters.empty
     , pageState = Empty
     , route = route
-    , firebaseConfig = LocalStorageData.Loading
-    , dirtyFirebaseConfig = initialFirebaseConfig
     }
-
-
-initialFirebaseConfig : FirebaseConfig
-initialFirebaseConfig =
-    FirebaseConfig "" "" "" "" "" ""
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -41,17 +32,12 @@ init location =
         route =
             Router.parseLocation location
     in
-        ( initialModel route
-        , Ports.localStorageGet firebaseConfigLocalStorageKey
-        )
+        initialModel route ! []
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ Ports.localStorageSetResponse Msgs.OnLocalStorageSet
-        , Ports.localStorageGetResponse Msgs.OnLocalStorageGet
-        ]
+    Sub.none
 
 
 main : Program Never Model Msg
@@ -81,7 +67,7 @@ page model =
                 ]
 
         Preferences ->
-            Pages.Preferences.view model.dirtyFirebaseConfig |> Html.map Msgs.PreferencesMsg
+            Pages.Preferences.view model
 
         NotFound ->
             Pages.NotFound.view model

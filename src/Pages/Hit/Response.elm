@@ -5,10 +5,11 @@ import JsonViewer
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
-import Models
+import Models exposing (Model)
 import Html.Events exposing (..)
 
 
+view : Model -> Html Msg
 view model =
     case model.pageState of
         Models.Empty ->

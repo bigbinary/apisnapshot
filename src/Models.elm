@@ -3,15 +3,8 @@ module Models exposing (..)
 import Http
 import HttpMethods exposing (HttpMethod)
 import JsonViewer
-import LocalStorageData exposing (..)
 import Pages.Hit.RequestParameters exposing (RequestParameters)
 import Router exposing (..)
-import Tuple
-
-
-firebaseConfigLocalStorageKey : String
-firebaseConfigLocalStorageKey =
-    "firebaseConfig"
 
 
 type ResponseViewing
@@ -35,16 +28,6 @@ type PageState
     | Loaded Response
 
 
-type alias FirebaseConfig =
-    { apiKey : String
-    , authDomain : String
-    , databaseURL : String
-    , projectId : String
-    , storageBucket : String
-    , messagingSenderId : String
-    }
-
-
 type alias Request =
     { url : String
     , urlError : Maybe String
@@ -57,6 +40,4 @@ type alias Model =
     { request : Request
     , pageState : PageState
     , route : Route
-    , firebaseConfig : LocalStorageData String FirebaseConfig
-    , dirtyFirebaseConfig : FirebaseConfig
     }

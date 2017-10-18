@@ -1,12 +1,10 @@
 module Update exposing (update)
 
 import JsonViewer
-import LocalStorageData exposing (..)
-import Models exposing (Model, PageState(..), firebaseConfigLocalStorageKey)
+import Models exposing (Model, PageState(..))
 import Msgs exposing (Msg)
 import Navigation
 import Pages.Preferences
-import Ports exposing (..)
 import Pages.Hit.RequestParameters exposing (..)
 import Router exposing (parseLocation)
 import Set
@@ -226,50 +224,3 @@ update msg model =
                     parseLocation location
             in
                 ( { model | route = newRoute }, Cmd.none )
-
-        Msgs.OnLocalStorageSet response ->
-            let
-                cmd =
-                    Cmd.batch
-                        [ localStorageGet firebaseConfigLocalStorageKey
-                        , Navigation.newUrl "#"
-                        ]
-            in
-                if response == "true" then
-                    ( model, cmd )
-                else
-                    ( model, Cmd.none )
-
-        Msgs.OnLocalStorageGet response ->
-            let
-                decodedFirebaseConfig =
-                    Pages.Preferences.decodeFirebaseConfig response
-
-                dirtFirebaseConfig =
-                    case decodedFirebaseConfig of
-                        LocalStorageData.Loading ->
-                            model.dirtyFirebaseConfig
-
-                        LocalStorageData.Success value ->
-                            value
-
-                        LocalStorageData.Failure error ->
-                            model.dirtyFirebaseConfig
-
-                newModel =
-                    { model
-                        | firebaseConfig = decodedFirebaseConfig
-                        , dirtyFirebaseConfig = dirtFirebaseConfig
-                    }
-            in
-                ( newModel, Cmd.none )
-
-        Msgs.PreferencesMsg subMsg ->
-            let
-                ( pageModel, cmd ) =
-                    Pages.Preferences.update subMsg model.dirtyFirebaseConfig
-
-                newModel =
-                    { model | dirtyFirebaseConfig = pageModel }
-            in
-                ( newModel, Cmd.map Msgs.PreferencesMsg cmd )
