@@ -107,8 +107,11 @@ update msg model =
 
         Msgs.Submit ->
             let
+                isUrlValid =
+                    not (isMaybeValuePresent model.request.urlError)
+
                 shouldSubmit =
-                    isMaybeValuePresent model.request.urlError && valid model.request.requestParameters
+                    isUrlValid && valid model.request.requestParameters
             in
                 if shouldSubmit then
                     ( { model | pageState = Models.Loading }, requestCommand model )
