@@ -1,0 +1,337 @@
+body {
+    font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    margin: 0;
+    text-align: left;
+    color: #293c4b;
+}
+
+div {
+    margin: 0
+}
+
+img {
+    margin: 20px 0;
+    max-width: 200px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.Main__loading {
+    font-size: 18px;
+}
+
+.UrlForm {
+    margin: 2em 3em 1em 3em;
+    font-size: 20px;
+}
+
+.UrlForm__httpMethodsDropdown {
+    margin-right: 1em;
+}
+
+.UrlForm__input {
+    width: 60%;
+    margin-right: 1em;
+}
+
+.UrlForm__moreActionsDropdown {
+    margin-right: 1em;
+}
+
+.RequestParameters {
+    margin: 0 2em;
+    padding: 2em;
+}
+
+.RequestParameters__heading {
+    font-size: 0.8rem;
+    color: #aaa;
+    text-transform: uppercase;
+}
+
+.RequestParameters__add {
+    margin-left: 10em;
+}
+
+.RequestParameters__delete {
+    color: #999;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 5px;
+}
+
+.RequestParameters__delete:hover {
+    color: #000;
+    text-decoration: none;
+}
+
+.RequestParameters ul {
+    list-style-type: none;
+    padding: 0
+}
+
+.RequestParameters li {
+    margin-bottom: 1em;
+}
+
+.RequestParameters input {
+    margin-right: 2em;
+}
+
+.Result {
+    padding: 2em;
+    margin: 2em;
+}
+
+.Result__jsonView {
+    font-size: 14px;
+    font-family: Menlo, monospace;
+    color: black;
+}
+
+.Error {
+    color: darkred;
+}
+
+.JsonView__collapsible:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.JsonView__propertyKey {
+    color: rgb(136, 19, 145);
+    margin-right: 8px;
+}
+
+.JsonView__number {
+    color: rgb(28, 0, 207);
+}
+
+.JsonView__string {
+    white-space: pre;
+    unicode-bidi: -webkit-isolate;
+    color: rgb(196, 26, 22);
+}
+
+.JsonView__null {
+    color: rgb(128, 128, 128);
+}
+
+.JsonView__bool {
+    color: rgb(170, 13, 145);
+}
+
+.JsonView__collectionGroup {
+    /* display: flex; */
+}
+
+.JsonView__collectionItem {
+    align-items: center;
+    box-sizing: border-box;
+    color: rgb(33, 33, 33);
+    cursor: default;
+    list-style-type: none;
+    min-height: 16px;
+    min-width: 0px;
+    position: relative;
+    tab-size: 4;
+    text-align: left;
+    text-overflow: ellipsis;
+    user-select: text;
+    white-space: nowrap;
+    word-wrap: break-word;
+}
+
+.JsonView__collectionItemsList {
+    box-sizing: border-box;
+    color: rgb(33, 33, 33);
+    cursor: default;
+    display: block;
+    list-style-type: none;
+    min-height: 0px;
+    min-width: 0px;
+    tab-size: 4;
+    user-select: text;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    -webkit-margin-after: 0px;
+    -webkit-margin-before: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-margin-start: 0px;
+    padding-left: 0px;
+    -webkit-padding-start: 0px;
+    border-left: 1px dotted;
+    margin-bottom: 16px;
+}
+
+.api-request-table {
+    margin-top: 20px;
+}
+
+html, body {
+    min-height: 100%;
+    height: 100%;
+    font-size: 16px;
+}
+.navbar {
+    margin-bottom: 0;
+    padding: 0 20px;
+}
+.list-headers {
+    padding: 5px 15px;
+}
+.input, .input:focus {
+    border-width: 0 0 1px 0;
+    border-radius: 0;
+    font-size: 16px;
+    box-shadow: none;
+}
+.api-req-form__container {
+    padding: 0;
+    border-bottom: 1px dashed #ccc;
+}
+.api-req-form__container .bootstrap-center-form {
+    text-align: left;
+    box-shadow: none;
+    margin-bottom: 0;
+}
+.api-req-form__title {
+    margin-bottom: 20px;
+}
+.api-req-form__auth-check {
+    margin-right: 5px !important;
+}
+.api-req-form__auth-form {
+    height: 50px;
+    margin-top: 15px;
+}
+.api-req-form__auth-form .checkbox {
+    line-height: 34px;
+}
+.api-req-form__auth-form .form-group {
+    margin: 0 5px;
+}
+.api-req-form__form {
+    border: none;
+}
+.api-req-form__send-icon {
+    color: #fff;
+    margin-right: 10px;
+}
+.api-req-form__url-group {
+    display: flex;
+    align-items: flex-start;
+}
+.api-req-form__url-control {
+    flex: 1;
+    padding-left: 20px;
+    padding-right: 20px;
+    width: 600px;
+}
+.api-req-form__remove-icon {
+    font-size: 16px;
+    color: gray;
+}
+.api-req-form__input {
+    width: 250px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+}
+.api-res-form__label {
+    color: gray;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+.api-res-form__response {
+    padding: 0 10px;
+}
+.api-req-form__textarea {
+    margin-top: 15px;
+}
+.api-req-form__assertion-select {
+    margin-right: 20px;
+}
+.api-req-form__form-inline {
+    margin-top: 10px;
+}
+.api-res__res {
+    background: #fff;
+    border-color: #eee;
+    font-size: 14px;
+}
+.api-req-form__btn-group {
+    margin-right: 20px;
+}
+.form-group__label {
+    font-size: 0.8rem;
+    margin-top: 20px;
+    margin-bottom: 0;
+    color: #aaa;
+    text-transform: uppercase;
+}
+.form-group__label .devise-links {
+    text-transform: capitalize;
+    font-size: 0.9rem;
+    margin-left: 10px;
+}
+.form-group {
+    margin-bottom: 0;
+}
+.api-req-form__request-body {
+    margin-left: 10px;
+    color: #666;
+}
+.api-res__req-panel {
+    border-bottom: 1px dashed #ddd;
+}
+.api-res__headers {
+    display: inline-block;
+    padding-left: 0;
+    list-style: none;
+}
+.api-res__req-tabs {
+    margin-bottom: 10px;
+}
+.api-res__req-tabs li {
+    cursor: pointer;
+}
+.api-res-form__list {
+    display: inline-block;
+    vertical-align: top;
+    list-style: none;
+    padding-left: 10px;
+}
+.api-res-form__assertions {
+    display: inline-block;
+    vertical-align: top;
+    padding-left: 10px;
+    list-style: none;
+}
+.api-res-form__assertions i {
+    margin-right: 5px;
+}
+.api-res-form__assertion--success i {
+    color: green;
+}
+.api-res-form__assertion--fail i {
+    color: red;
+}
+.api-req-form__more-text {
+    margin-right: 5px;
+}
+.api-res__header-item-key {
+    font-weight: bold;
+    margin-right: 4px;
+}
+a.glyphicon-star, a.glyphicon-star-empty {
+    color: gold;
+    text-decoration: none;
+    cursor: pointer;
+    padding-left: 15px;
+}
+a.glyphicon-star-empty {
+    color: black;
+}
