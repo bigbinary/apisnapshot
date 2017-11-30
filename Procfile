@@ -1,2 +1,2 @@
-rails: rails server -p 3333
-webpack: ./bin/webpack-dev-server
+release: bin/rails db:migrate
+web: bin/rails server -p $PORT -e $RAILS_ENV

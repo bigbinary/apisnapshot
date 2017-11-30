@@ -1,24 +1,31 @@
 {
   "name": "elmsanity",
   "description": "",
-  "scripts": {
-    "postdeploy": "bundle exec rails db:setup"
-  },
+  "scripts": {},
   "env": {
     "SECRET_KEY_BASE": {
       "generator": "secret"
-    },
-    "RACK_ENV": "staging",
-    "RAILS_ENV": "staging",
-    "LOG_LEVEL": "DEBUG",
-    "HEROKU": "true"
+    }
   },
   "formation": {
+    "web": {
+      "quantity": 1
+    }
   },
   "addons": [
-
+    {
+      "plan": "heroku-postgresql",
+      "options": {
+        "version": "9.5"
+      }
+    }
   ],
   "buildpacks": [
-
+    {
+      "url": "heroku/nodejs"
+    },
+    {
+      "url": "heroku/ruby"
+    }
   ]
 }

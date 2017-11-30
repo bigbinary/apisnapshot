@@ -4,6 +4,6 @@ class ApplicationController < ActionController::Base
   force_ssl if: :ssl_configured?
 
   def ssl_configured?
-    !(Rails.env.development? || Rails.env.test?)
+    !(Rails.env.development? || Rails.env.staging? || Rails.env.test?)
   end
 end

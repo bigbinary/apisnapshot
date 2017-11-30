@@ -1,0 +1,2 @@
+rails: rails server -p 3333
+webpack: ./bin/webpack-dev-server
