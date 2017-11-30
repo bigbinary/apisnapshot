@@ -13,5 +13,5 @@ rails db:setup
 ## Local Development
 
 ```
-foreman start
+foreman start -f Procfile.dev
 ```
