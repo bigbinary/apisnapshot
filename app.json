@@ -1,0 +1,24 @@
+{
+  "name": "elmsanity",
+  "description": "",
+  "scripts": {
+    "postdeploy": "bundle exec rails db:setup"
+  },
+  "env": {
+    "SECRET_KEY_BASE": {
+      "generator": "secret"
+    },
+    "RACK_ENV": "staging",
+    "RAILS_ENV": "staging",
+    "LOG_LEVEL": "DEBUG",
+    "HEROKU": "true"
+  },
+  "formation": {
+  },
+  "addons": [
+
+  ],
+  "buildpacks": [
+
+  ]
+}
