@@ -105,7 +105,7 @@ morePullDownMenu =
             [ class "dropdown-menu", attribute "aria-labelledby" "dropdownMenuButton" ]
             [ a
                 [ class "dropdown-item"
-                , href "#"
+                , href "javascript:void(0)"
                 , onClick (Msgs.MoreActionsDropdownChange "Add Parameter")
                 ]
                 [ text "Add Parameter" ]
