@@ -2,10 +2,13 @@ module HttpUtil exposing (..)
 
 import Dict exposing (Dict)
 import JSVal
-import Json.Decode
+import Json.Decode as JD
+import Json.Decode.Pipeline as JP
 import Http
 import HttpMethods exposing (HttpMethod, parse, toString)
-import Pages.Hit.RequestParameters exposing (..)
+import Models exposing (Request)
+import Response exposing (Response)
+import Pages.Hit.RequestParameters as RequestParameters exposing (..)
 
 
 encodeUrl : String -> RequestParameters -> String
@@ -18,11 +21,14 @@ encodeUrl url requestParameters =
         |> (++) (url ++ "?")
 
 
-parseResponseBodyToJson : String -> JSVal.JSVal
-parseResponseBodyToJson httpResponseBody =
+decodeHitResponseBodyIntoJson : Response -> JSVal.JSVal
+decodeHitResponseBodyIntoJson hitResponse =
     let
+        decoder =
+            JD.at [ "response", "response_body" ] JSVal.decoder
+
         result =
-            Json.Decode.decodeString (Json.Decode.at [ "response", "body" ] JSVal.decoder) httpResponseBody
+            JD.decodeString decoder hitResponse.body
 
         error message =
             JSVal.JSString ("Error parsing the body. " ++ message)
@@ -30,7 +36,7 @@ parseResponseBodyToJson httpResponseBody =
         parseString string =
             let
                 result =
-                    Json.Decode.decodeString JSVal.decoder string
+                    JD.decodeString JSVal.decoder string
             in
                 case result of
                     Ok jsonValue ->
@@ -52,15 +58,56 @@ parseResponseBodyToJson httpResponseBody =
                 error err
 
 
-parseResponseHeaders : String -> List ( String, String )
-parseResponseHeaders httpResponseBody =
+requestParametersDecoder : JD.Decoder RequestParameters
+requestParametersDecoder =
+    JD.keyValuePairs JD.string
+        |> JD.andThen
+            (\result ->
+                result
+                    |> List.map (\( key, value ) -> RequestParameter key value)
+                    |> List.foldl (\item memo -> RequestParameters.push item memo) RequestParameters.empty
+                    |> JD.succeed
+            )
+
+
+httpMethodDecoder : JD.Decoder HttpMethod
+httpMethodDecoder =
+    JD.string
+        |> JD.andThen (\str -> JD.succeed (parse str))
+
+
+requestDecoder : JD.Decoder Request
+requestDecoder =
+    JP.decode Request
+        |> JP.optional "url" JD.string ""
+        |> JP.hardcoded Nothing
+        |> JP.optional "httpMethod" httpMethodDecoder HttpMethods.Get
+        |> JP.optional "requestParams" requestParametersDecoder RequestParameters.empty
+
+
+decodeHitResponseIntoRequest : Response -> Request
+decodeHitResponseIntoRequest hitResponse =
+    let
+        result =
+            JD.decodeString requestDecoder hitResponse.body
+    in
+        case result of
+            Ok decodedValue ->
+                decodedValue
+
+            Err err ->
+                Models.emptyRequest
+
+
+decodeHeadersFromHitResponse : Response -> List ( String, String )
+decodeHeadersFromHitResponse hitResponse =
     let
         decoder =
-            Json.Decode.keyValuePairs Json.Decode.string
-                |> Json.Decode.field "response_headers"
+            JD.keyValuePairs JD.string
+                |> JD.at [ "response", "response_headers" ]
 
         result =
-            Json.Decode.decodeString decoder httpResponseBody
+            JD.decodeString decoder hitResponse.body
     in
         case result of
             Ok jsonValue ->
@@ -68,6 +115,23 @@ parseResponseHeaders httpResponseBody =
 
             Err err ->
                 []
+
+
+decodeTokenFromResponse : Response -> Maybe String
+decodeTokenFromResponse response =
+    let
+        decoder =
+            JD.field "token" JD.string
+
+        result =
+            JD.decodeString decoder response.body
+    in
+        case result of
+            Ok token ->
+                Just token
+
+            Err err ->
+                Nothing
 
 
 buildRequest : String -> HttpMethod -> Http.Body -> Http.Request (Http.Response String)

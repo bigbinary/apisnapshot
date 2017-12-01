@@ -2,79 +2,88 @@ module Pages.Hit.Response exposing (..)
 
 import Msgs exposing (Msg)
 import JsonViewer
+import HttpUtil
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Models exposing (Model)
 import Html.Events exposing (..)
+import Response exposing (..)
+import RemoteData
 
 
 view : Model -> Html Msg
 view model =
-    case model.pageState of
-        Models.Empty ->
+    case model.response of
+        RemoteData.NotAsked ->
             text ""
 
-        Models.Loading ->
+        RemoteData.Loading ->
             p [ class "Main__loading" ] [ text "Loading..." ]
 
-        Models.Error error ->
+        RemoteData.Failure error ->
             errorMarkup error
 
-        Models.Loaded response ->
-            loadedMarkup response
+        RemoteData.Success response ->
+            loadedMarkup response model
 
 
-loadedMarkup : Models.Response -> Html Msg
-loadedMarkup response =
+loadedMarkup : Response -> Model -> Html Msg
+loadedMarkup response model =
     div []
-        [ httpStatusMarkup response.raw
+        [ httpStatusMarkup response
         , bodyHeadersNavBar
         , div [ class "tab-content", id "nav-tabContent" ]
             [ headersTabMarkup response
-            , bodyTabMarkup response
+            , bodyTabMarkup response model
             ]
         ]
 
 
-headersTabMarkup : Models.Response -> Html Msg
+headersTabMarkup : Response -> Html Msg
 headersTabMarkup response =
     let
         headerRow ( key, value ) =
             tr [] [ td [] [ strong [] [ text key ] ], td [] [ text value ] ]
     in
         div [ class "tab-pane fade", id "response-headers" ]
-            [ table [] (List.map headerRow response.headers)
+            [ table []
+                (List.map
+                    headerRow
+                    (HttpUtil.decodeHeadersFromHitResponse response)
+                )
             ]
 
 
-bodyTabMarkup : Models.Response -> Html Msg
-bodyTabMarkup response =
+bodyTabMarkup : Response -> Model -> Html Msg
+bodyTabMarkup response model =
     div [ class "tab-pane fade show active", id "response-body" ]
-        [ formattedOrRawView response ]
+        [ formattedOrRawView response model ]
 
 
-formattedOrRawView : Models.Response -> Html Msg
-formattedOrRawView response =
-    if response.viewing == Models.Raw then
-        rawResponseMarkup response.raw
+formattedOrRawView : Response -> Model -> Html Msg
+formattedOrRawView response model =
+    if model.responseViewing == Raw then
+        rawResponseMarkup response
     else
-        formattedResponseMarkup response
+        formattedResponseMarkup response model
 
 
-formattedResponseMarkup : Models.Response -> Html Msg
-formattedResponseMarkup response =
+formattedResponseMarkup : Response -> Model -> Html Msg
+formattedResponseMarkup response model =
     let
         rootNode =
-            { jsonVal = response.json
+            { jsonVal =
+                JsonViewer.fromJSVal
+                    (HttpUtil.decodeHitResponseBodyIntoJson response)
             , nodePath = JsonViewer.rootNodePath
             , depth = 0
-            , collapsedNodePaths = response.collapsedNodePaths
+            , collapsedNodePaths = model.collapsedNodePaths
             }
     in
         h5 []
             [ text "Formatted response"
-            , a [ class "btn", href "#", onClick Msgs.ShowRawResponse ] [ text "switch to raw response" ]
+            , a [ class "btn", href "javascript:void(0)", onClick Msgs.ShowRawResponse ] [ text "switch to raw response" ]
             , pre [ class "api-res__res" ]
                 [ span [ class "block" ] [ JsonViewer.view rootNode ] ]
             ]
@@ -145,7 +154,7 @@ rawResponseMarkup response =
     div []
         [ h5 []
             [ text "Raw Response"
-            , a [ class "btn", href "#", onClick Msgs.ShowFormattedResponse ] [ text "switch to formatted response" ]
+            , a [ class "btn", href "javascript:void(0)", onClick Msgs.ShowFormattedResponse ] [ text "switch to formatted response" ]
             ]
-        , textarea [ class "form-control" ] [ text response.body ]
+        , pre [ class "form-control" ] [ text response.body ]
         ]

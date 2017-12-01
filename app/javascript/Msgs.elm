@@ -2,12 +2,15 @@ module Msgs exposing (..)
 
 import Http
 import Navigation exposing (Location)
+import Response exposing (Response)
+import RemoteData exposing (WebData)
 
 
 type Msg
     = Submit
     | ChangeUrl String
-    | ResponseAvailable (Result Http.Error (Http.Response String))
+    | OnSubmitResponse (WebData Response)
+    | OnHitFetchResponse (WebData Response)
     | ToggleJsonCollectionView String
     | MoreActionsDropdownChange String
     | HttpMethodsDropdownChange String

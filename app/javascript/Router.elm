@@ -1,20 +1,15 @@
 module Router exposing (..)
 
+import Models exposing (Route(..))
 import Navigation exposing (Location)
 import UrlParser exposing (..)
-
-
-type Route
-    = Home
-    | Preferences
-    | NotFound
 
 
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map Home top
-        , map Preferences (s "preferences")
+        [ map HomeRoute top
+        , map HitRoute (s "hits" </> string)
         ]
 
 

@@ -1,35 +1,31 @@
 module Main exposing (..)
 
-import HttpMethods exposing (HttpMethod(..))
-import Models exposing (Model, Request, PageState(..))
+import Models exposing (Model, Request)
 import Msgs exposing (Msg)
 import Navigation exposing (Location)
-import Pages.Hit.RequestParameters as RequestParameters exposing (RequestParameters)
 import Router exposing (..)
-import Update exposing (update)
-import Models exposing (Model)
+import Update exposing (update, updateRoute)
+import Models exposing (Model, emptyRequest)
 import Msgs exposing (Msg)
 import Pages.Hit.Response
 import Pages.Hit.Request
-import Pages.Preferences
 import Pages.NotFound
 import Router exposing (..)
 import Html exposing (Html, div, ul, li, a, text)
 import Html.Attributes exposing (class, href)
+import RemoteData
+import Response
+import Set
 
 
-initialModel : Route -> Model
+initialModel : Models.Route -> Model
 initialModel route =
-    let
-        requestParameters =
-            RequestParameters.empty
-                |> RequestParameters.push { key = "name", value = "Sam" }
-                |> RequestParameters.push { key = "age", value = "25" }
-    in
-        { request = Request "https://reqres.in/api/users" Nothing Post requestParameters
-        , pageState = Empty
-        , route = route
-        }
+    { request = emptyRequest
+    , response = RemoteData.NotAsked
+    , responseViewing = Response.Formatted
+    , collapsedNodePaths = Set.empty
+    , route = route
+    }
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -38,7 +34,7 @@ init location =
         route =
             Router.parseLocation location
     in
-        initialModel route ! []
+        updateRoute route (initialModel route)
 
 
 subscriptions : Model -> Sub Msg
@@ -65,15 +61,19 @@ view model =
 
 page : Model -> Html Msg
 page model =
-    case model.route of
-        Home ->
+    let
+        homeRouteMarkup =
             div []
                 [ div [ class "container-fluid api-req-form__container" ] [ Pages.Hit.Request.view model ]
                 , Pages.Hit.Response.view model
                 ]
+    in
+        case model.route of
+            Models.HomeRoute ->
+                homeRouteMarkup
 
-        Preferences ->
-            Pages.Preferences.view model
+            Models.HitRoute _ ->
+                homeRouteMarkup
 
-        NotFound ->
-            Pages.NotFound.view model
+            _ ->
+                Pages.NotFound.view model

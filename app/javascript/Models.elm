@@ -1,31 +1,16 @@
 module Models exposing (..)
 
-import Http
 import HttpMethods exposing (HttpMethod)
-import JsonViewer
-import Pages.Hit.RequestParameters exposing (RequestParameters)
-import Router exposing (..)
+import Pages.Hit.RequestParameters as RequestParameters exposing (RequestParameters)
+import RemoteData exposing (WebData)
+import Response exposing (Response, ResponseViewing)
+import JsonViewerTypes exposing (..)
 
 
-type ResponseViewing
-    = Formatted
-    | Raw
-
-
-type alias Response =
-    { raw : Http.Response String
-    , collapsedNodePaths : JsonViewer.CollapsedNodePaths
-    , json : JsonViewer.JsonView
-    , headers : List ( String, String )
-    , viewing : ResponseViewing
-    }
-
-
-type PageState
-    = Empty
-    | Loading
-    | Error Http.Error
-    | Loaded Response
+type Route
+    = HomeRoute
+    | HitRoute String
+    | NotFound
 
 
 type alias Request =
@@ -36,8 +21,15 @@ type alias Request =
     }
 
 
+emptyRequest : Request
+emptyRequest =
+    Request "" Nothing HttpMethods.Get RequestParameters.empty
+
+
 type alias Model =
     { request : Request
-    , pageState : PageState
+    , response : WebData Response
     , route : Route
+    , collapsedNodePaths : CollapsedNodePaths
+    , responseViewing : ResponseViewing
     }

@@ -1,20 +1,19 @@
-module Update exposing (update)
+module Update exposing (update, updateRoute)
 
-import Json.Decode
-import JsonViewer
-import Models exposing (Model, PageState(..))
+import Models exposing (Model)
 import Msgs exposing (Msg)
 import Navigation
-import Pages.Preferences
 import Pages.Hit.Request
 import Pages.Hit.RequestParameters exposing (..)
 import Router exposing (parseLocation)
+import Response exposing (..)
 import Set
 import HttpUtil
 import Http
 import HttpMethods exposing (parse)
 import Dict
 import Util exposing (isMaybeValuePresent, isStringEmpty)
+import RemoteData exposing (WebData)
 
 
 requestCommand : Model -> Cmd Msg
@@ -29,21 +28,21 @@ requestCommand model =
         request =
             HttpUtil.buildRequest requestPath HttpMethods.Post requestBody
     in
-        Http.send Msgs.ResponseAvailable request
+        RemoteData.sendRequest request
+            |> Cmd.map Msgs.OnSubmitResponse
 
 
-updateModelWithResponse : Model -> Http.Response String -> Model
-updateModelWithResponse model httpResponse =
+fetchHitDataCommand : String -> Cmd Msg
+fetchHitDataCommand token =
     let
-        response =
-            { raw = httpResponse
-            , collapsedNodePaths = Set.empty
-            , json = JsonViewer.fromJSVal (HttpUtil.parseResponseBodyToJson httpResponse.body)
-            , headers = HttpUtil.parseResponseHeaders httpResponse.body
-            , viewing = Models.Formatted
-            }
+        requestPath =
+            "/api_responses/" ++ token
+
+        request =
+            HttpUtil.buildRequest requestPath HttpMethods.Get Http.emptyBody
     in
-        { model | pageState = Loaded response }
+        RemoteData.sendRequest request
+            |> Cmd.map Msgs.OnHitFetchResponse
 
 
 parseRespondeHeadersToJson : Http.Response String -> List ( String, String )
@@ -53,7 +52,7 @@ parseRespondeHeadersToJson httpResponse =
 
 updateErrorResponse : Model -> Http.Error -> Model
 updateErrorResponse model httpError =
-    { model | pageState = Error httpError }
+    model
 
 
 changeUrl : Model -> String -> Model
@@ -74,18 +73,50 @@ changeUrl model newUrl =
         { model | request = newRequest }
 
 
-updateModelWithViewingStatus : Model -> Models.ResponseViewing -> Model
+updateModelWithViewingStatus : Model -> ResponseViewing -> Model
 updateModelWithViewingStatus model viewing =
-    case model.pageState of
-        Models.Loaded response ->
-            let
-                newPageState =
-                    Models.Loaded { response | viewing = viewing }
-            in
-                { model | pageState = newPageState }
+    case model.response of
+        RemoteData.Success response ->
+            { model | responseViewing = viewing }
 
         _ ->
             model
+
+
+navigateToHitPermalinkCommand : Maybe String -> Cmd Msg
+navigateToHitPermalinkCommand maybeToken =
+    case maybeToken of
+        Just token ->
+            Navigation.newUrl ("#/hits/" ++ token)
+
+        Nothing ->
+            Cmd.none
+
+
+updateRoute : Models.Route -> Model -> ( Model, Cmd Msg )
+updateRoute route model =
+    let
+        cmd =
+            case route of
+                Models.HitRoute token ->
+                    fetchHitDataCommand token
+
+                _ ->
+                    Cmd.none
+
+        response =
+            if cmd == Cmd.none then
+                RemoteData.NotAsked
+            else
+                RemoteData.Loading
+
+        request =
+            if cmd == Cmd.none then
+                Models.emptyRequest
+            else
+                model.request
+    in
+        { model | route = route, request = request, response = response } ! [ cmd ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -99,14 +130,14 @@ update msg model =
         Msgs.ShowRawResponse ->
             let
                 newModel =
-                    updateModelWithViewingStatus model Models.Raw
+                    updateModelWithViewingStatus model Raw
             in
                 ( newModel, Cmd.none )
 
         Msgs.ShowFormattedResponse ->
             let
                 newModel =
-                    updateModelWithViewingStatus model Models.Formatted
+                    updateModelWithViewingStatus model Formatted
             in
                 ( newModel, Cmd.none )
 
@@ -119,27 +150,21 @@ update msg model =
                     isUrlValid && valid model.request.requestParameters
             in
                 if shouldSubmit then
-                    ( { model | pageState = Models.Loading }, requestCommand model )
+                    ( { model | response = RemoteData.Loading }, requestCommand model )
                 else
                     ( model, Cmd.none )
 
-        Msgs.ResponseAvailable (Ok value) ->
-            ( updateModelWithResponse model value, Cmd.none )
-
-        Msgs.ResponseAvailable (Err error) ->
-            ( updateErrorResponse model error, Cmd.none )
-
         Msgs.ToggleJsonCollectionView id ->
-            ( case model.pageState of
-                Loaded response ->
+            ( case model.response of
+                RemoteData.Success response ->
                     let
                         collapsedNodePaths =
-                            response.collapsedNodePaths
+                            model.collapsedNodePaths
                     in
                         if Set.member id collapsedNodePaths then
-                            { model | pageState = Loaded { response | collapsedNodePaths = Set.remove id collapsedNodePaths } }
+                            { model | collapsedNodePaths = Set.remove id collapsedNodePaths }
                         else
-                            { model | pageState = Loaded { response | collapsedNodePaths = Set.insert id collapsedNodePaths } }
+                            { model | collapsedNodePaths = Set.insert id collapsedNodePaths }
 
                 _ ->
                     model
@@ -217,8 +242,32 @@ update msg model =
                 ( { model | request = newRequest }, Cmd.none )
 
         Msgs.OnLocationChange location ->
+            (parseLocation location |> updateRoute) model
+
+        Msgs.OnSubmitResponse response ->
             let
-                newRoute =
-                    parseLocation location
+                cmd =
+                    case response of
+                        RemoteData.Success successResponse ->
+                            HttpUtil.decodeTokenFromResponse successResponse
+                                |> navigateToHitPermalinkCommand
+
+                        _ ->
+                            Cmd.none
             in
-                ( { model | route = newRoute }, Cmd.none )
+                { model | response = response } ! [ cmd ]
+
+        Msgs.OnHitFetchResponse response ->
+            let
+                updatedModel =
+                    case response of
+                        RemoteData.Success successResponse ->
+                            { model
+                                | request =
+                                    HttpUtil.decodeHitResponseIntoRequest successResponse
+                            }
+
+                        _ ->
+                            model
+            in
+                { updatedModel | response = response } ! []
