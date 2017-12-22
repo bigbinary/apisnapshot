@@ -9,6 +9,7 @@ import HttpMethods exposing (HttpMethod, parse, toString)
 import Models exposing (Request)
 import Response exposing (Response)
 import Pages.Hit.RequestParameters as RequestParameters exposing (..)
+import Pages.Hit.RequestHeaders as RequestHeaders exposing (..)
 
 
 encodeUrl : String -> RequestParameters -> String
@@ -70,6 +71,18 @@ requestParametersDecoder =
             )
 
 
+requestHeadersDecoder : JD.Decoder RequestHeaders
+requestHeadersDecoder =
+    JD.keyValuePairs JD.string
+        |> JD.andThen
+            (\result ->
+                result
+                    |> List.map (\( key, value ) -> RequestHeader key value)
+                    |> List.foldl (\item memo -> RequestHeaders.push item memo) RequestHeaders.empty
+                    |> JD.succeed
+            )
+
+
 httpMethodDecoder : JD.Decoder HttpMethod
 httpMethodDecoder =
     JD.string
@@ -83,6 +96,7 @@ requestDecoder =
         |> JP.hardcoded Nothing
         |> JP.optional "httpMethod" httpMethodDecoder HttpMethods.Get
         |> JP.optional "requestParams" requestParametersDecoder RequestParameters.empty
+        |> JP.optional "requestHeaders" requestHeadersDecoder RequestHeaders.empty
 
 
 decodeHitResponseIntoRequest : Response -> Request

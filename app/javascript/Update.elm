@@ -4,7 +4,8 @@ import Models exposing (Model)
 import Msgs exposing (Msg)
 import Navigation
 import Pages.Hit.Request
-import Pages.Hit.RequestParameters exposing (..)
+import Pages.Hit.RequestParameters as RequestParameters
+import Pages.Hit.RequestHeaders as RequestHeaders
 import Router exposing (parseLocation)
 import Response exposing (..)
 import Set
@@ -43,11 +44,6 @@ fetchHitDataCommand token =
     in
         RemoteData.sendRequest request
             |> Cmd.map Msgs.OnHitFetchResponse
-
-
-parseRespondeHeadersToJson : Http.Response String -> List ( String, String )
-parseRespondeHeadersToJson httpResponse =
-    Dict.toList httpResponse.headers
 
 
 updateErrorResponse : Model -> Http.Error -> Model
@@ -146,8 +142,14 @@ update msg model =
                 isUrlValid =
                     not (isMaybeValuePresent model.request.urlError)
 
+                areRequestParametersValid =
+                    RequestParameters.valid model.request.requestParameters
+
+                areRequestHeadersValid =
+                    RequestHeaders.valid model.request.requestHeaders
+
                 shouldSubmit =
-                    isUrlValid && valid model.request.requestParameters
+                    isUrlValid && areRequestParametersValid && areRequestHeadersValid
             in
                 if shouldSubmit then
                     ( { model | response = RemoteData.Loading }, requestCommand model )
@@ -176,13 +178,16 @@ update msg model =
                 "Add Parameter" ->
                     update Msgs.AddRequestParameter model
 
+                "Add Header" ->
+                    update Msgs.AddRequestHeader model
+
                 _ ->
                     ( model, Cmd.none )
 
         Msgs.AddRequestParameter ->
             let
                 newRequestParameters =
-                    pushBlank model.request.requestParameters
+                    RequestParameters.pushBlank model.request.requestParameters
 
                 currentRequest =
                     model.request
@@ -198,7 +203,7 @@ update msg model =
                     model.request
 
                 newRequestParameters =
-                    updateName index newName model.request.requestParameters
+                    RequestParameters.updateName index newName model.request.requestParameters
 
                 newRequest =
                     { currentRequest | requestParameters = newRequestParameters }
@@ -211,7 +216,7 @@ update msg model =
                     model.request
 
                 newRequestParameters =
-                    updateValue index newValue model.request.requestParameters
+                    RequestParameters.updateValue index newValue model.request.requestParameters
 
                 newRequest =
                     { currentRequest | requestParameters = newRequestParameters }
@@ -224,10 +229,57 @@ update msg model =
                     model.request
 
                 newRequestParameters =
-                    remove index model.request.requestParameters
+                    RequestParameters.remove index model.request.requestParameters
 
                 newRequest =
                     { currentRequest | requestParameters = newRequestParameters }
+            in
+                ( { model | request = newRequest }, Cmd.none )
+
+        Msgs.AddRequestHeader ->
+            let
+                newRequestHeaders =
+                    RequestHeaders.pushBlank model.request.requestHeaders
+
+                currentRequest =
+                    model.request
+
+                newRequest =
+                    { currentRequest | requestHeaders = newRequestHeaders }
+            in
+                ( { model | request = newRequest }, Cmd.none )
+
+        Msgs.ChangeRequestHeaderAttribute label index value ->
+            let
+                currentRequest =
+                    model.request
+
+                newRequestHeaders =
+                    case label of
+                        "Name" ->
+                            RequestHeaders.updateName index value currentRequest.requestHeaders
+
+                        "Value" ->
+                            RequestHeaders.updateValue index value currentRequest.requestHeaders
+
+                        _ ->
+                            currentRequest.requestHeaders
+
+                newRequest =
+                    { currentRequest | requestHeaders = newRequestHeaders }
+            in
+                ( { model | request = newRequest }, Cmd.none )
+
+        Msgs.DeleteRequestHeader index ->
+            let
+                currentRequest =
+                    model.request
+
+                newRequestHeaders =
+                    RequestHeaders.remove index model.request.requestHeaders
+
+                newRequest =
+                    { currentRequest | requestHeaders = newRequestHeaders }
             in
                 ( { model | request = newRequest }, Cmd.none )
 

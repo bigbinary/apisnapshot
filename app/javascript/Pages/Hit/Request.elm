@@ -14,6 +14,12 @@ import Pages.Hit.RequestParameters as RequestParameters
         , RequestParameters
         , requestParametersEncoder
         )
+import Pages.Hit.RequestHeaders as RequestHeaders
+    exposing
+        ( RequestHeader
+        , RequestHeaders
+        , requestHeadersEncoder
+        )
 import Models exposing (..)
 
 
@@ -24,6 +30,7 @@ encodeRequest ({ request } as model) =
             [ ( "url", string request.url )
             , ( "method", string <| HttpMethods.toString <| request.httpMethod )
             , ( "request_parameters", requestParametersEncoder request.requestParameters )
+            , ( "request_headers", requestHeadersEncoder request.requestHeaders )
             ]
     in
         Json.Encode.object attributes
@@ -48,6 +55,7 @@ formView ({ request } as model) =
             , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
             ]
         , requestParametersView request
+        , requestHeadersView request
         ]
 
 
@@ -109,6 +117,12 @@ morePullDownMenu =
                 , onClick (Msgs.MoreActionsDropdownChange "Add Parameter")
                 ]
                 [ text "Add Parameter" ]
+            , a
+                [ class "dropdown-item"
+                , href "javascript:void(0)"
+                , onClick (Msgs.MoreActionsDropdownChange "Add Header")
+                ]
+                [ text "Add Header" ]
             ]
         ]
 
@@ -118,6 +132,13 @@ requestParametersView { requestParameters } =
         text ""
     else
         RequestParameters.view requestParameters
+
+
+requestHeadersView { requestHeaders } =
+    if Dict.isEmpty requestHeaders then
+        text ""
+    else
+        RequestHeaders.view requestHeaders
 
 
 httpMethodDropdown : HttpMethod -> Html Msg

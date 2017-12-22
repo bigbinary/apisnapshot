@@ -2,6 +2,7 @@ module Models exposing (..)
 
 import HttpMethods exposing (HttpMethod)
 import Pages.Hit.RequestParameters as RequestParameters exposing (RequestParameters)
+import Pages.Hit.RequestHeaders as RequestHeaders exposing (RequestHeaders)
 import RemoteData exposing (WebData)
 import Response exposing (Response, ResponseViewing)
 import JsonViewerTypes exposing (..)
@@ -18,12 +19,17 @@ type alias Request =
     , urlError : Maybe String
     , httpMethod : HttpMethod
     , requestParameters : RequestParameters
+    , requestHeaders : RequestHeaders
     }
 
 
 emptyRequest : Request
 emptyRequest =
-    Request "" Nothing HttpMethods.Get RequestParameters.empty
+    Request ""
+        Nothing
+        HttpMethods.Get
+        RequestParameters.empty
+        RequestHeaders.empty
 
 
 type alias Model =
