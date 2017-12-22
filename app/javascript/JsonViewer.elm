@@ -42,14 +42,14 @@ indent =
     16
 
 
-arrowRight : String
+arrowRight : Html msg
 arrowRight =
-    "▶ "
+    span [ class "JsonView__collapseArrow" ] [ text "▶ " ]
 
 
-arrowDown : String
+arrowDown : Html msg
 arrowDown =
-    "▼ "
+    span [ class "JsonView__collapseArrow" ] [ text "▼ " ]
 
 
 rootNodePath : NodePath
@@ -129,19 +129,8 @@ fromJSVal jsVal =
 ---- VIEW ----
 
 
-{-| Render the first line of a collection.
-
-It looks like so:
-
-    ▶ Object (3)
-    ▼ Array (4)
-
-Clicking on the arrow expands/collapses the collection.
-
-Does not render anything for non-collections.
-
--}
-firstSummaryLine node =
+collectionItemPrefix : Node -> Html Msg
+collectionItemPrefix node =
     let
         { jsonVal, collapsedNodePaths, nodePath } =
             node
@@ -155,40 +144,60 @@ firstSummaryLine node =
                 , onClick (Msgs.ToggleJsonCollectionView nodePath)
                 ]
                 [ if isCollapsed then
-                    text arrowRight
+                    arrowRight
                   else
-                    text arrowDown
-                , text (caption ++ " (" ++ toString (List.length collection) ++ ")")
+                    arrowDown
+                , text caption
                 ]
     in
         case jsonVal of
             JVArray collection ->
-                render collection "Array"
+                render collection "["
 
             JVObject collection ->
-                render collection "Object"
+                render collection "{"
 
             _ ->
                 Html.text ""
 
 
-collectionItemView : Node -> JVCollectionElement -> Html Msg
-collectionItemView parentNode ( nodePath, elementKey, jsonVal ) =
+collectionItemPostfix : Node -> Html Msg
+collectionItemPostfix { jsonVal } =
+    case jsonVal of
+        JVArray collection ->
+            text "],"
+
+        JVObject collection ->
+            text "},"
+
+        _ ->
+            text ","
+
+
+collectionItemView : Bool -> Node -> JVCollectionElement -> Html Msg
+collectionItemView showPropertyKey parentNode ( nodePath, elementKey, jsonVal ) =
     let
         node =
             { parentNode | jsonVal = jsonVal, nodePath = nodePath }
+
+        propertyKey =
+            if showPropertyKey then
+                span
+                    [ class "JsonView__propertyKey" ]
+                    [ text (elementKey ++ ":") ]
+            else
+                text ""
     in
         li [ class "JsonView__collectionItem" ]
-            [ span
-                [ class "JsonView__propertyKey" ]
-                [ text (elementKey ++ ":") ]
-            , firstSummaryLine node
+            [ propertyKey
+            , collectionItemPrefix node
             , view node
+            , collectionItemPostfix node
             ]
 
 
-collectionView : Node -> JVCollection -> String -> Html Msg
-collectionView parentNode collection caption =
+collectionView : Node -> JVCollection -> Bool -> Html Msg
+collectionView parentNode collection showPropertyKey =
     let
         { collapsedNodePaths, depth, nodePath } =
             parentNode
@@ -204,14 +213,14 @@ collectionView parentNode collection caption =
                 , style [ ( "paddingLeft", toString ((depth + 1) * indent) ++ "px" ) ]
                 ]
                 (List.map
-                    (collectionItemView { parentNode | depth = depth + 1 })
+                    (collectionItemView showPropertyKey { parentNode | depth = depth + 1 })
                     collection
                 )
 
 
 view : Node -> Html Msg
 view node =
-    div [ class "json-view" ] [ (view2 node) ]
+    span [ class "json-view" ] [ (view2 node) ]
 
 
 view2 : Node -> Html Msg
@@ -230,17 +239,18 @@ view2 node =
             span [ class "JsonView__bool" ] [ text (toString bool) ]
 
         JVNull ->
-            span [ class "JsonView__null" ] [ text "(null)" ]
+            span [ class "JsonView__null" ] [ text "null" ]
 
         JVArray array ->
             let
                 rendered =
-                    collectionView node array "Array"
+                    collectionView node array False
             in
                 if node.depth == 0 then
                     li [ class "JsonView__collectionItem" ]
-                        [ firstSummaryLine node
+                        [ collectionItemPrefix node
                         , rendered
+                        , collectionItemPostfix node
                         ]
                 else
                     rendered
@@ -248,12 +258,13 @@ view2 node =
         JVObject object ->
             let
                 rendered =
-                    collectionView node object "Object"
+                    collectionView node object True
             in
                 if node.depth == 0 then
                     li [ class "JsonView__collectionItem" ]
-                        [ firstSummaryLine node
+                        [ collectionItemPrefix node
                         , rendered
+                        , collectionItemPostfix node
                         ]
                 else
                     rendered
