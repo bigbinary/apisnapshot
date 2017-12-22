@@ -131,6 +131,23 @@ decodeHeadersFromHitResponse hitResponse =
                 []
 
 
+decodeCreatedAtFromResponse : Response -> Maybe String
+decodeCreatedAtFromResponse response =
+    let
+        decoder =
+            JD.field "createdAt" JD.string
+
+        result =
+            JD.decodeString decoder response.body
+    in
+        case result of
+            Ok date ->
+                Just date
+
+            Err err ->
+                Nothing
+
+
 decodeTokenFromResponse : Response -> Maybe String
 decodeTokenFromResponse response =
     let

@@ -119,12 +119,21 @@ httpErrorMarkup response =
 
 httpStatusMarkup : Http.Response String -> Html msg
 httpStatusMarkup response =
-    div [ class "api-res-form__response" ]
-        [ h3 [] [ text "Response" ]
-        , p [] [ span [ class "api-res-form__label" ] [ text ("Status: " ++ toString response.status.code) ] ]
-        , p [] [ text response.status.message ]
-        , p [] [ span [ class "api-res-form__label" ] [ text ("Date: display date here") ] ]
-        ]
+    let
+        responseCreatedAtMarkup =
+            case HttpUtil.decodeCreatedAtFromResponse response of
+                Just date ->
+                    p [] [ span [ class "api-res-form__label" ] [ text ("Date: " ++ date) ] ]
+
+                Nothing ->
+                    Html.text ""
+    in
+        div [ class "api-res-form__response" ]
+            [ h3 [] [ text "Response" ]
+            , p [] [ span [ class "api-res-form__label" ] [ text ("Status: " ++ toString response.status.code) ] ]
+            , p [] [ text response.status.message ]
+            , responseCreatedAtMarkup
+            ]
 
 
 bodyHeadersNavBar : Html msg

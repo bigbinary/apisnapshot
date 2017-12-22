@@ -28,6 +28,7 @@ class ApiResponsesController < ApplicationController
   def api_response
     {
       url: @api_response.url,
+      createdAt: @api_response.created_at,
       httpMethod: @api_response.method,
       requestParams: @api_response.request_params,
       requestHeaders: @api_response.request_headers,
