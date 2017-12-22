@@ -16,7 +16,6 @@ type Route
 
 type alias Request =
     { url : String
-    , urlError : Maybe String
     , httpMethod : HttpMethod
     , requestParameters : RequestParameters
     , requestHeaders : RequestHeaders
@@ -26,7 +25,6 @@ type alias Request =
 emptyRequest : Request
 emptyRequest =
     Request ""
-        Nothing
         HttpMethods.Get
         RequestParameters.empty
         RequestHeaders.empty

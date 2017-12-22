@@ -93,7 +93,6 @@ requestDecoder : JD.Decoder Request
 requestDecoder =
     JP.decode Request
         |> JP.optional "url" JD.string ""
-        |> JP.hardcoded Nothing
         |> JP.optional "httpMethod" httpMethodDecoder HttpMethods.Get
         |> JP.optional "requestParams" requestParametersDecoder RequestParameters.empty
         |> JP.optional "requestHeaders" requestHeadersDecoder RequestHeaders.empty

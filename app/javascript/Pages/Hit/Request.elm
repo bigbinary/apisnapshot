@@ -21,6 +21,7 @@ import Pages.Hit.RequestHeaders as RequestHeaders
         , requestHeadersEncoder
         )
 import Models exposing (..)
+import Util
 
 
 encodeRequest : Model -> Json.Encode.Value
@@ -59,44 +60,42 @@ formView ({ request } as model) =
         ]
 
 
+isUrlValid : String -> Bool
+isUrlValid =
+    Util.isStringPresent
+
+
 urlInputField : Model -> Html Msg
 urlInputField model =
-    div [ class "api-req-form__url-control" ]
-        [ input
-            [ class (classForUrlField model)
-            , name "url"
-            , type_ "text"
-            , placeholder "Enter url here"
-            , onInput Msgs.ChangeUrl
-            , value model.request.url
-            ]
-            []
-        , urlEmptyErrorMessage model
-        ]
-
-
-classForUrlField : Model -> String
-classForUrlField model =
     let
         defaultClass =
             "input form-control required"
-    in
-        case model.request.urlError of
-            Nothing ->
-                defaultClass
 
-            Just error ->
+        updatedClass =
+            if isUrlValid model.request.url then
+                defaultClass
+            else
                 defaultClass ++ " is-invalid"
 
-
-urlEmptyErrorMessage : Model -> Html Msg
-urlEmptyErrorMessage model =
-    case model.request.urlError of
-        Nothing ->
-            span [] []
-
-        Just error ->
-            div [ class "invalid-feedback" ] [ text error ]
+        viewValidationError =
+            if isUrlValid model.request.url then
+                text ""
+            else
+                div [ class "invalid-feedback" ]
+                    [ text "Please enter a URL" ]
+    in
+        div [ class "api-req-form__url-control" ]
+            [ input
+                [ class updatedClass
+                , name "url"
+                , type_ "text"
+                , placeholder "Enter URL here"
+                , onInput Msgs.ChangeUrl
+                , value model.request.url
+                ]
+                []
+            , viewValidationError
+            ]
 
 
 morePullDownMenu =

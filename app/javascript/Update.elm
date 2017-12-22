@@ -56,17 +56,8 @@ changeUrl model newUrl =
     let
         currentRequest =
             model.request
-
-        error =
-            if isStringEmpty newUrl then
-                Just "Please enter a url"
-            else
-                Nothing
-
-        newRequest =
-            { currentRequest | url = newUrl, urlError = error }
     in
-        { model | request = newRequest }
+        { model | request = { currentRequest | url = newUrl } }
 
 
 updateModelWithViewingStatus : Model -> ResponseViewing -> Model
@@ -140,7 +131,7 @@ update msg model =
         Msgs.Submit ->
             let
                 isUrlValid =
-                    not (isMaybeValuePresent model.request.urlError)
+                    Pages.Hit.Request.isUrlValid model.request.url
 
                 areRequestParametersValid =
                     RequestParameters.valid model.request.requestParameters
