@@ -36,4 +36,5 @@ type alias Model =
     , route : Route
     , collapsedNodePaths : CollapsedNodePaths
     , responseViewing : ResponseViewing
+    , showErrors : Bool
     }

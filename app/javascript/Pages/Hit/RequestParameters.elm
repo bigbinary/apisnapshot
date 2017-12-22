@@ -140,10 +140,10 @@ remove position requestParameters =
 -- VIEW --
 
 
-viewRequestParameter : Position -> RequestParameter -> Html Msg
-viewRequestParameter position requestParameter =
+viewRequestParameter : Bool -> Position -> RequestParameter -> Html Msg
+viewRequestParameter showErrors position requestParameter =
     div [ class "form-row" ]
-        [ viewRequestParameterName position requestParameter
+        [ viewRequestParameterName position requestParameter showErrors
         , div [ class "col" ]
             [ input
                 [ type_ "text"
@@ -165,24 +165,26 @@ viewRequestParameter position requestParameter =
         ]
 
 
-viewRequestParameterName : Position -> RequestParameter -> Html Msg
-viewRequestParameterName position { key } =
+viewRequestParameterName : Position -> RequestParameter -> Bool -> Html Msg
+viewRequestParameterName position { key } showErrors =
     let
         defaultClass =
             "input form-control api-req-form__input"
 
+        shouldShowError =
+            showErrors && not (isStringPresent key)
+
         updatedClass =
-            if isStringPresent key then
-                defaultClass
-            else
+            if shouldShowError then
                 defaultClass ++ " is-invalid"
+            else
+                defaultClass
 
         viewValidationError =
-            if isStringPresent key then
-                text ""
+            if shouldShowError then
+                div [ class "invalid-feedback" ] [ text "Cannot be empty" ]
             else
-                div [ class "invalid-feedback" ]
-                    [ text "Cannot be empty" ]
+                text ""
     in
         div [ class "col" ]
             [ input
@@ -197,24 +199,24 @@ viewRequestParameterName position { key } =
             ]
 
 
-viewRequestParameters : RequestParameters -> Html Msg
-viewRequestParameters requestParameters =
+viewRequestParameters : RequestParameters -> Bool -> Html Msg
+viewRequestParameters requestParameters showErrors =
     div [ class "aapi-req-form__form-inline" ]
         (requestParameters
-            |> Dict.map viewRequestParameter
+            |> Dict.map (viewRequestParameter showErrors)
             |> Dict.toList
             |> List.map (\( _, viewRequestParameter ) -> viewRequestParameter)
         )
 
 
-view : RequestParameters -> Html Msg
-view requestParameters =
+view : RequestParameters -> Bool -> Html Msg
+view requestParameters showErrors =
     div [ class "form-group" ]
         [ div [ class "form-group__label" ]
             [ span [] [ text "Request Parameters" ]
             , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestParameter ] [ text "Add Parameter" ]
             ]
-        , viewRequestParameters requestParameters
+        , viewRequestParameters requestParameters showErrors
         ]
 
 

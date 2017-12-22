@@ -12,7 +12,6 @@ import Pages.Hit.Request
 import Pages.NotFound
 import Router exposing (..)
 import Html exposing (Html, div, ul, li, a, text)
-import Html.Attributes exposing (class, href)
 import RemoteData
 import Response
 import Set
@@ -25,6 +24,7 @@ initialModel route =
     , responseViewing = Response.Formatted
     , collapsedNodePaths = Set.empty
     , route = route
+    , showErrors = False
     }
 
 

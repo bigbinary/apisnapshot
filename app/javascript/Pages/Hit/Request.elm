@@ -55,8 +55,8 @@ formView ({ request } as model) =
             , morePullDownMenu
             , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
             ]
-        , requestParametersView request
-        , requestHeadersView request
+        , requestParametersView request model.showErrors
+        , requestHeadersView request model.showErrors
         ]
 
 
@@ -71,18 +71,20 @@ urlInputField model =
         defaultClass =
             "input form-control required"
 
+        shouldShowError =
+            model.showErrors && not (isUrlValid model.request.url)
+
         updatedClass =
-            if isUrlValid model.request.url then
-                defaultClass
-            else
+            if shouldShowError then
                 defaultClass ++ " is-invalid"
+            else
+                defaultClass
 
         viewValidationError =
-            if isUrlValid model.request.url then
-                text ""
+            if shouldShowError then
+                div [ class "invalid-feedback" ] [ text "Please enter a URL" ]
             else
-                div [ class "invalid-feedback" ]
-                    [ text "Please enter a URL" ]
+                text ""
     in
         div [ class "api-req-form__url-control" ]
             [ input
@@ -126,18 +128,20 @@ morePullDownMenu =
         ]
 
 
-requestParametersView { requestParameters } =
+requestParametersView : Request -> Bool -> Html Msg
+requestParametersView { requestParameters } showErrors =
     if Dict.isEmpty requestParameters then
         text ""
     else
-        RequestParameters.view requestParameters
+        RequestParameters.view requestParameters showErrors
 
 
-requestHeadersView { requestHeaders } =
+requestHeadersView : Request -> Bool -> Html Msg
+requestHeadersView { requestHeaders } showErrors =
     if Dict.isEmpty requestHeaders then
         text ""
     else
-        RequestHeaders.view requestHeaders
+        RequestHeaders.view requestHeaders showErrors
 
 
 httpMethodDropdown : HttpMethod -> Html Msg

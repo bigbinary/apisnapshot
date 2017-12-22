@@ -12,8 +12,6 @@ import Set
 import HttpUtil
 import Http
 import HttpMethods exposing (parse)
-import Dict
-import Util exposing (isMaybeValuePresent, isStringEmpty)
 import RemoteData exposing (WebData)
 
 
@@ -57,7 +55,7 @@ changeUrl model newUrl =
         currentRequest =
             model.request
     in
-        { model | request = { currentRequest | url = newUrl } }
+        { model | showErrors = False, request = { currentRequest | url = newUrl } }
 
 
 updateModelWithViewingStatus : Model -> ResponseViewing -> Model
@@ -143,9 +141,14 @@ update msg model =
                     isUrlValid && areRequestParametersValid && areRequestHeadersValid
             in
                 if shouldSubmit then
-                    ( { model | response = RemoteData.Loading }, requestCommand model )
+                    ( { model
+                        | showErrors = False
+                        , response = RemoteData.Loading
+                      }
+                    , requestCommand model
+                    )
                 else
-                    ( model, Cmd.none )
+                    ( { model | showErrors = True }, Cmd.none )
 
         Msgs.ToggleJsonCollectionView id ->
             ( case model.response of
@@ -199,7 +202,7 @@ update msg model =
                 newRequest =
                     { currentRequest | requestParameters = newRequestParameters }
             in
-                ( { model | request = newRequest }, Cmd.none )
+                ( { model | showErrors = False, request = newRequest }, Cmd.none )
 
         Msgs.ChangeRequestParameterValue index newValue ->
             let
@@ -259,7 +262,7 @@ update msg model =
                 newRequest =
                     { currentRequest | requestHeaders = newRequestHeaders }
             in
-                ( { model | request = newRequest }, Cmd.none )
+                ( { model | showErrors = False, request = newRequest }, Cmd.none )
 
         Msgs.DeleteRequestHeader index ->
             let
@@ -285,7 +288,7 @@ update msg model =
                 ( { model | request = newRequest }, Cmd.none )
 
         Msgs.OnLocationChange location ->
-            (parseLocation location |> updateRoute) model
+            (parseLocation location |> updateRoute) { model | showErrors = False }
 
         Msgs.OnSubmitResponse response ->
             let

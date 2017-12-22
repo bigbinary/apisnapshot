@@ -138,23 +138,13 @@ remove position requestHeaders =
 
 
 -- VIEW --
--- , div [ class "col" ]
---             [ input
---                 [ type_ "text"
---                 , placeholder "Enter Value"
---                 , class "input form-control api-req-form__input"
---                 , value requestHeader.value
---                 , onInput (Msgs.ChangeRequestHeaderValue position)
---                 ]
---                 []
---             ]
 
 
-viewRequestHeader : Position -> RequestHeader -> Html Msg
-viewRequestHeader position requestHeader =
+viewRequestHeader : Bool -> Position -> RequestHeader -> Html Msg
+viewRequestHeader showErrors position requestHeader =
     div [ class "form-row" ]
-        [ viewRequestHeaderAttribute "Name" position requestHeader.key
-        , viewRequestHeaderAttribute "Value" position requestHeader.value
+        [ viewRequestHeaderAttribute "Name" position requestHeader.key showErrors
+        , viewRequestHeaderAttribute "Value" position requestHeader.value showErrors
         , div [ class "col" ]
             [ a
                 [ href "javascript:void(0)"
@@ -166,24 +156,26 @@ viewRequestHeader position requestHeader =
         ]
 
 
-viewRequestHeaderAttribute : String -> Position -> String -> Html Msg
-viewRequestHeaderAttribute label position value_ =
+viewRequestHeaderAttribute : String -> Position -> String -> Bool -> Html Msg
+viewRequestHeaderAttribute label position value_ showErrors =
     let
         defaultClass =
             "input form-control api-req-form__input"
 
+        shouldShowError =
+            showErrors && not (isStringPresent value_)
+
         updatedClass =
-            if isStringPresent value_ then
-                defaultClass
-            else
+            if shouldShowError then
                 defaultClass ++ " is-invalid"
+            else
+                defaultClass
 
         viewValidationError =
-            if isStringPresent value_ then
-                text ""
+            if shouldShowError then
+                div [ class "invalid-feedback" ] [ text "Cannot be empty" ]
             else
-                div [ class "invalid-feedback" ]
-                    [ text "Cannot be empty" ]
+                text ""
     in
         div [ class "col" ]
             [ input
@@ -198,24 +190,24 @@ viewRequestHeaderAttribute label position value_ =
             ]
 
 
-viewRequestHeaders : RequestHeaders -> Html Msg
-viewRequestHeaders requestHeaders =
+viewRequestHeaders : RequestHeaders -> Bool -> Html Msg
+viewRequestHeaders requestHeaders showErrors =
     div [ class "aapi-req-form__form-inline" ]
         (requestHeaders
-            |> Dict.map viewRequestHeader
+            |> Dict.map (viewRequestHeader showErrors)
             |> Dict.toList
             |> List.map (\( _, viewRequestHeader ) -> viewRequestHeader)
         )
 
 
-view : RequestHeaders -> Html Msg
-view requestHeaders =
+view : RequestHeaders -> Bool -> Html Msg
+view requestHeaders showErrors =
     div [ class "form-group" ]
         [ div [ class "form-group__label" ]
             [ span [] [ text "Request Headers" ]
             , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestHeader ] [ text "Add Header" ]
             ]
-        , viewRequestHeaders requestHeaders
+        , viewRequestHeaders requestHeaders showErrors
         ]
 
 
