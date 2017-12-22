@@ -130,6 +130,26 @@ decodeHeadersFromHitResponse hitResponse =
                 []
 
 
+decodeStatusCodeFromResponse : Response -> Int
+decodeStatusCodeFromResponse response =
+    let
+        decoder =
+            JD.string |> JD.at [ "response", "response_code" ]
+
+        result =
+            JD.decodeString decoder response.body
+
+        defaultStatusCode =
+            500
+    in
+        case result of
+            Ok statusCode ->
+                String.toInt statusCode |> Result.withDefault defaultStatusCode
+
+            Err err ->
+                defaultStatusCode
+
+
 decodeCreatedAtFromResponse : Response -> Maybe String
 decodeCreatedAtFromResponse response =
     let

@@ -14,18 +14,22 @@ import RemoteData
 
 view : Model -> Html Msg
 view model =
-    case model.response of
-        RemoteData.NotAsked ->
-            text ""
+    let
+        content =
+            case model.response of
+                RemoteData.NotAsked ->
+                    text ""
 
-        RemoteData.Loading ->
-            p [ class "Main__loading" ] [ text "Loading..." ]
+                RemoteData.Loading ->
+                    p [ class "Main__loading" ] [ text "Loading..." ]
 
-        RemoteData.Failure error ->
-            errorMarkup error
+                RemoteData.Failure error ->
+                    errorMarkup error
 
-        RemoteData.Success response ->
-            loadedMarkup response model
+                RemoteData.Success response ->
+                    loadedMarkup response model
+    in
+        div [ class "row" ] [ div [ class "col" ] [ content ] ]
 
 
 loadedMarkup : Response -> Model -> Html Msg
@@ -83,7 +87,7 @@ formattedResponseMarkup response model =
     in
         h5 []
             [ text "Formatted response"
-            , a [ class "btn", href "javascript:void(0)", onClick Msgs.ShowRawResponse ] [ text "switch to raw response" ]
+            , a [ class "btn", href "javascript:void(0)", onClick Msgs.ShowRawResponse ] [ text "Switch to raw response" ]
             , pre [ class "api-res__res" ]
                 [ span [ class "block" ] [ JsonViewer.view rootNode ] ]
             ]
@@ -123,15 +127,24 @@ httpStatusMarkup response =
         responseCreatedAtMarkup =
             case HttpUtil.decodeCreatedAtFromResponse response of
                 Just date ->
-                    p [] [ span [ class "api-res-form__label" ] [ text ("Date: " ++ date) ] ]
+                    p []
+                        [ span
+                            [ class "api-res-form__label" ]
+                            [ strong [] [ text "Date: " ], text date ]
+                        ]
 
                 Nothing ->
                     Html.text ""
     in
         div [ class "api-res-form__response" ]
             [ h3 [] [ text "Response" ]
-            , p [] [ span [ class "api-res-form__label" ] [ text ("Status: " ++ toString response.status.code) ] ]
-            , p [] [ text response.status.message ]
+            , p []
+                [ span
+                    [ class "api-res-form__label" ]
+                    [ strong [] [ text "Status: " ]
+                    , HttpUtil.decodeStatusCodeFromResponse response |> toString |> text
+                    ]
+                ]
             , responseCreatedAtMarkup
             ]
 
@@ -163,7 +176,7 @@ rawResponseMarkup response =
     div []
         [ h5 []
             [ text "Raw Response"
-            , a [ class "btn", href "javascript:void(0)", onClick Msgs.ShowFormattedResponse ] [ text "switch to formatted response" ]
+            , a [ class "btn", href "javascript:void(0)", onClick Msgs.ShowFormattedResponse ] [ text "Switch to formatted response" ]
             ]
         , pre [ class "form-control" ] [ text response.body ]
         ]

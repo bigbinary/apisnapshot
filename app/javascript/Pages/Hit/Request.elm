@@ -39,13 +39,13 @@ encodeRequest ({ request } as model) =
 
 view : Model -> Html Msg
 view model =
-    div [ class "row form-controls text-center" ] [ formView model ]
+    div [ class "row form-controls" ] [ formView model ]
 
 
 formView : Model -> Html Msg
 formView ({ request } as model) =
     Html.form
-        [ class "bootstrap-center-form api-req-form__form"
+        [ class "bootstrap-center-form api-req-form__form col"
         , onSubmit Msgs.Submit
         , action "javascript:void(0)"
         ]

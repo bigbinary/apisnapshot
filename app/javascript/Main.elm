@@ -54,19 +54,9 @@ main =
 
 view : Model -> Html Msg
 view model =
-    div [ class "container-fluid" ]
-        [ div [] [ page model ]
-        ]
-
-
-page : Model -> Html Msg
-page model =
     let
         homeRouteMarkup =
-            div []
-                [ div [ class "container-fluid api-req-form__container" ] [ Pages.Hit.Request.view model ]
-                , Pages.Hit.Response.view model
-                ]
+            div [] [ Pages.Hit.Request.view model, Pages.Hit.Response.view model ]
     in
         case model.route of
             Models.HomeRoute ->

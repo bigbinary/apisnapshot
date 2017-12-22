@@ -8,21 +8,13 @@
   </head>
 
   <body>
-
-    <div class='navbar navbar-default navbar-static-top' role='navigation'>
-      <div class='container-fluid'>
-
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">ElmSanity</a>
-      </nav>
-
+    <header class='navbar navbar-expand navbar-dark flex-column flex-md-row'>
+      <div class="container">
+          <a class="navbar-brand" href="#">ElmSanity</a>
       </div>
-    </div>
-
-    <div class='container-fluid page'>
-      <div class='row'>
-        <%= yield %>
-      </div>
+    </header>
+    <div class='container main'>
+      <%= yield %>
     </div>
 
     <%= javascript_pack_tag "application" %>
