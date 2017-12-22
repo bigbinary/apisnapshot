@@ -1,5 +1,7 @@
 module Util exposing (..)
 
+import Date.Extra as Date
+
 
 isMaybeValuePresent : Maybe a -> Bool
 isMaybeValuePresent maybe =
@@ -19,3 +21,13 @@ isStringEmpty =
 isStringPresent : String -> Bool
 isStringPresent =
     isStringEmpty >> not
+
+
+formatAndLocalizeDatetime : String -> String
+formatAndLocalizeDatetime dateString =
+    case Date.fromIsoString dateString of
+        Just date ->
+            Date.toFormattedString "ddd MMMM y, h:mm a" date
+
+        Nothing ->
+            dateString

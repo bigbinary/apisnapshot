@@ -10,6 +10,7 @@ import Models exposing (Model)
 import Html.Events exposing (..)
 import Response exposing (..)
 import RemoteData
+import Util
 
 
 view : Model -> Html Msg
@@ -126,11 +127,13 @@ httpStatusMarkup response =
     let
         responseCreatedAtMarkup =
             case HttpUtil.decodeCreatedAtFromResponse response of
-                Just date ->
+                Just dateString ->
                     p []
                         [ span
                             [ class "api-res-form__label" ]
-                            [ strong [] [ text "Date: " ], text date ]
+                            [ strong [] [ text "Date: " ]
+                            , Util.formatAndLocalizeDatetime dateString |> text
+                            ]
                         ]
 
                 Nothing ->
