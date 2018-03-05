@@ -8,6 +8,8 @@ cp config/database.yml.postgresql config/database.yml
 bin/bundle install
 bin/rails db:setup
 bin/yarn install
+npm install -g elm
+elm-package install
 ```
 
 
