@@ -5,8 +5,9 @@
 
 ```
 cp config/database.yml.postgresql config/database.yml
-bundle install
-rails db:setup
+bin/bundle install
+bin/rails db:setup
+bin/yarn install
 ```
 
 
@@ -15,3 +16,11 @@ rails db:setup
 ```
 foreman start -f Procfile.dev
 ```
+
+Once it shows
+`webpack: Compiled successfully.` message in the terminal,
+access the app at http://localhost:3333.
+
+Webpack will automatically compile
+if a file inside `app/javascript/` directory
+is modified.
