@@ -20,9 +20,11 @@ import Pages.Hit.RequestHeaders as RequestHeaders
         , RequestHeaders
         , requestHeadersEncoder
         )
+import Pages.Hit.RequestBody as RequestBody exposing (requestBodyEncoder)
 import Models exposing (..)
+import Util exposing (DropDownAction(..), dropDownActionToString)
 import Util
-
+            
 
 encodeRequest : Model -> Json.Encode.Value
 encodeRequest ({ request } as model) =
@@ -31,10 +33,30 @@ encodeRequest ({ request } as model) =
             [ ( "url", string request.url )
             , ( "method", string <| HttpMethods.toString <| request.httpMethod )
             , ( "request_parameters", requestParametersEncoder request.requestParameters )
-            , ( "request_headers", requestHeadersEncoder request.requestHeaders )
             ]
+       
+        addBody atr =
+            case request.requestBody of
+                Just rb ->
+                    let
+                        bodyHeader =
+                            case rb.bodyType of
+                                Util.BodyText -> "text/plain"
+                                Util.BodyJSON -> "application/json"
+                                    
+                        currentHeaders = request.requestHeaders
+                        contentTypeHeader = 
+                            { key = "content_type"
+                            , value = bodyHeader
+                            }
+                        newHeaders = Dict.insert (Dict.size currentHeaders) contentTypeHeader currentHeaders
+                    in
+                        atr ++ [ ("request_body", string rb.value)] ++ [( "request_headers", requestHeadersEncoder newHeaders)]
+            
+                Nothing ->
+                    atr ++ [( "request_headers", requestHeadersEncoder request.requestHeaders )]
     in
-        Json.Encode.object attributes
+        Json.Encode.object (addBody attributes)
 
 
 view : Model -> Html Msg
@@ -57,6 +79,7 @@ formView ({ request } as model) =
             ]
         , requestParametersView request model.showErrors
         , requestHeadersView request model.showErrors
+        , requestBodyView request model.showErrors
         ]
 
 
@@ -115,15 +138,21 @@ morePullDownMenu =
             [ a
                 [ class "dropdown-item"
                 , href "javascript:void(0)"
-                , onClick (Msgs.MoreActionsDropdownChange "Add Parameter")
+                , onClick <| Msgs.MoreActionsDropdownChange DDAddParameter
                 ]
-                [ text "Add Parameter" ]
+                [ text <| dropDownActionToString DDAddParameter ]
             , a
                 [ class "dropdown-item"
                 , href "javascript:void(0)"
-                , onClick (Msgs.MoreActionsDropdownChange "Add Header")
+                , onClick <| Msgs.MoreActionsDropdownChange DDAddHeader
                 ]
-                [ text "Add Header" ]
+                [ text <| dropDownActionToString DDAddHeader ]
+            , a
+                [ class "dropdown-item"
+                , href "javascript:void(0)"
+                , onClick <| Msgs.MoreActionsDropdownChange DDAddBody
+                ]
+                [ text <| dropDownActionToString DDAddBody]
             ]
         ]
 
@@ -142,6 +171,14 @@ requestHeadersView { requestHeaders } showErrors =
         text ""
     else
         RequestHeaders.view requestHeaders showErrors
+
+requestBodyView : Request -> Bool -> Html Msg
+requestBodyView { requestBody } showErrors =
+    case requestBody of
+        Nothing ->
+            text ""
+        Just b ->
+            RequestBody.view b.value b.bodyType showErrors
 
 
 httpMethodDropdown : HttpMethod -> Html Msg

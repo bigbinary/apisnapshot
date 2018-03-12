@@ -6,7 +6,7 @@ import Pages.Hit.RequestHeaders as RequestHeaders exposing (RequestHeaders)
 import RemoteData exposing (WebData)
 import Response exposing (Response, ResponseViewing)
 import JsonViewerTypes exposing (..)
-
+import Util exposing (RequestBody)
 
 type Route
     = HomeRoute
@@ -19,6 +19,7 @@ type alias Request =
     , httpMethod : HttpMethod
     , requestParameters : RequestParameters
     , requestHeaders : RequestHeaders
+    , requestBody : Maybe RequestBody
     }
 
 
@@ -28,6 +29,7 @@ emptyRequest =
         HttpMethods.Get
         RequestParameters.empty
         RequestHeaders.empty
+        Nothing
 
 
 type alias Model =

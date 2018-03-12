@@ -6,6 +6,7 @@ import Navigation
 import Pages.Hit.Request
 import Pages.Hit.RequestParameters as RequestParameters
 import Pages.Hit.RequestHeaders as RequestHeaders
+import Pages.Hit.RequestBody as RequestBody
 import Router exposing (parseLocation)
 import Response exposing (..)
 import Set
@@ -13,7 +14,7 @@ import HttpUtil
 import Http
 import HttpMethods exposing (parse)
 import RemoteData exposing (WebData)
-
+import Util exposing (DropDownAction(..))
 
 requestCommand : Model -> Cmd Msg
 requestCommand model =
@@ -169,15 +170,44 @@ update msg model =
 
         Msgs.MoreActionsDropdownChange selectedOption ->
             case selectedOption of
-                "Add Parameter" ->
+                DDAddParameter ->
                     update Msgs.AddRequestParameter model
 
-                "Add Header" ->
+                DDAddHeader ->
                     update Msgs.AddRequestHeader model
+                
+                DDAddBody ->
+                    let
+                        currentRequest = model.request
+                        newRequest =
+                            { currentRequest
+                            | requestBody = Just RequestBody.emptyBody
+                            }
+                    in
+                        ( {model | request = newRequest }, Cmd.none )
 
-                _ ->
-                    ( model, Cmd.none )
+        Msgs.UpdateRequestBody val ->
+            let
+                currentRequest = model.request
 
+                newRequest =
+                    { currentRequest
+                    | requestBody = Just val
+                    }
+            in
+                ( {model | request = newRequest }, Cmd.none )
+        
+        Msgs.RemoveRequestBody ->
+            let
+                currentRequest = model.request
+
+                newRequest =
+                    { currentRequest
+                    | requestBody = Nothing
+                    }
+            in
+                ( {model | request = newRequest }, Cmd.none )
+        
         Msgs.AddRequestParameter ->
             let
                 newRequestParameters =

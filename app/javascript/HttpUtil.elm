@@ -10,6 +10,7 @@ import Models exposing (Request)
 import Response exposing (Response)
 import Pages.Hit.RequestParameters as RequestParameters exposing (..)
 import Pages.Hit.RequestHeaders as RequestHeaders exposing (..)
+import Util exposing (..)
 
 
 encodeUrl : String -> RequestParameters -> String
@@ -96,6 +97,28 @@ requestDecoder =
         |> JP.optional "httpMethod" httpMethodDecoder HttpMethods.Get
         |> JP.optional "requestParams" requestParametersDecoder RequestParameters.empty
         |> JP.optional "requestHeaders" requestHeadersDecoder RequestHeaders.empty
+        |> JP.optional "requestBody" 
+            ( JD.map Just requestBodyDecoder) Nothing
+
+
+requestBodyDecoder : JD.Decoder RequestBody
+requestBodyDecoder =
+    JP.decode RequestBody
+        |> JP.required "bodyType" requestBodyTypeDecoder
+        |> JP.required "value" JD.string
+
+requestBodyTypeDecoder : JD.Decoder RequestBodyType
+requestBodyTypeDecoder =
+    JD.string
+        |> JD.andThen (\str ->
+           case str of
+                "BodyText" ->
+                    JD.succeed BodyText
+                "BodyJSON" ->
+                    JD.succeed BodyJSON
+                somethingElse ->
+                    JD.fail <| "Unknown type: " ++ somethingElse
+        )
 
 
 decodeHitResponseIntoRequest : Response -> Request
