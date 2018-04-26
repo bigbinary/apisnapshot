@@ -1,15 +1,50 @@
-module HttpUtil exposing (..)
+module Utils.HttpUtil exposing (..)
 
 import Dict exposing (Dict)
-import JSVal
+import Response.JSVal as JSVal
 import Json.Decode as JD
 import Json.Decode.Pipeline as JP
 import Http
-import HttpMethods exposing (HttpMethod, parse, toString)
-import Models exposing (Request)
-import Response exposing (Response)
-import Pages.Hit.RequestParameters as RequestParameters exposing (..)
-import Pages.Hit.RequestHeaders as RequestHeaders exposing (..)
+import Utils.HttpMethods as HttpMethods exposing (HttpMethod, parse, toString)
+import Request.RequestParameters as RequestParameters exposing (..)
+import Request.RequestHeaders as RequestHeaders exposing (..)
+import Request.RequestBody as RequestHeaders exposing (..)
+import Request.RequestBasicAuthentication as RequestBasicAuthentication exposing (..)
+
+
+type alias Response =
+    Http.Response String
+
+
+type alias Request =
+    { url : String
+    , httpMethod : HttpMethod
+    , requestParameters : RequestParameters
+    , requestHeaders : RequestHeaders
+    , basicAuthentication : Maybe BasicAuthentication
+    , requestBody : Maybe RequestBody
+    }
+
+
+type alias SRequest =
+    { url : String
+    , httpMethod : HttpMethod
+    , requestParameters : RequestParameters
+    , requestHeaders : RequestHeaders
+    , username : Maybe String
+    , password : Maybe String
+    , requestBody : Maybe RequestBody
+    }
+
+
+emptyRequest : Request
+emptyRequest =
+    Request ""
+        HttpMethods.Get
+        RequestParameters.empty
+        RequestHeaders.empty
+        Nothing
+        Nothing
 
 
 encodeUrl : String -> RequestParameters -> String
@@ -22,17 +57,28 @@ encodeUrl url requestParameters =
         |> (++) (url ++ "?")
 
 
+decodeResponseBodyToString : Response -> String
+decodeResponseBodyToString hitResponse =
+    let
+        result =
+            JD.decodeString (JD.at [ "response", "response_body" ] JD.string) hitResponse.body
+    in
+        case result of
+            Ok value ->
+                value
+
+            Err err ->
+                ("Error: Could not parse body. " ++ err)
+
+
 decodeHitResponseBodyIntoJson : Response -> JSVal.JSVal
 decodeHitResponseBodyIntoJson hitResponse =
     let
-        decoder =
-            JD.at [ "response", "response_body" ] JSVal.decoder
-
         result =
-            JD.decodeString decoder hitResponse.body
+            JD.decodeString (JD.at [ "response", "response_body" ] JSVal.decoder) hitResponse.body
 
-        error message =
-            JSVal.JSString ("Error parsing the body. " ++ message)
+        errorParsing message =
+            JSVal.JSString ("Error: Could not parse body. " ++ message)
 
         parseString string =
             let
@@ -44,7 +90,7 @@ decodeHitResponseBodyIntoJson hitResponse =
                         jsonValue
 
                     Err err ->
-                        error err
+                        errorParsing err
     in
         case result of
             Ok jsonValue ->
@@ -56,7 +102,7 @@ decodeHitResponseBodyIntoJson hitResponse =
                         jsonValue
 
             Err err ->
-                error err
+                errorParsing err
 
 
 requestParametersDecoder : JD.Decoder RequestParameters
@@ -69,6 +115,13 @@ requestParametersDecoder =
                     |> List.foldl (\item memo -> RequestParameters.push item memo) RequestParameters.empty
                     |> JD.succeed
             )
+
+
+requestBasicAuthenticationDecoder : JD.Decoder BasicAuthentication
+requestBasicAuthenticationDecoder =
+    JP.decode BasicAuthentication
+        |> JP.required "username" JD.string
+        |> JP.required "password" JD.string
 
 
 requestHeadersDecoder : JD.Decoder RequestHeaders
@@ -89,13 +142,42 @@ httpMethodDecoder =
         |> JD.andThen (\str -> JD.succeed (parse str))
 
 
-requestDecoder : JD.Decoder Request
+requestDecoder : JD.Decoder SRequest
 requestDecoder =
-    JP.decode Request
+    JP.decode SRequest
         |> JP.optional "url" JD.string ""
         |> JP.optional "httpMethod" httpMethodDecoder HttpMethods.Get
         |> JP.optional "requestParams" requestParametersDecoder RequestParameters.empty
         |> JP.optional "requestHeaders" requestHeadersDecoder RequestHeaders.empty
+        |> JP.optional "username" (JD.map Just JD.string) Nothing
+        |> JP.optional "password" (JD.map Just JD.string) Nothing
+        |> JP.optional "requestBody"
+            (JD.map Just requestBodyDecoder)
+            Nothing
+
+
+requestBodyDecoder : JD.Decoder RequestBody
+requestBodyDecoder =
+    JP.decode RequestBody
+        |> JP.required "bodyType" requestBodyTypeDecoder
+        |> JP.required "value" JD.string
+
+
+requestBodyTypeDecoder : JD.Decoder RequestBodyType
+requestBodyTypeDecoder =
+    JD.string
+        |> JD.andThen
+            (\str ->
+                case str of
+                    "BodyText" ->
+                        JD.succeed BodyText
+
+                    "BodyJSON" ->
+                        JD.succeed BodyJSON
+
+                    somethingElse ->
+                        JD.fail <| "Unknown type: " ++ somethingElse
+            )
 
 
 decodeHitResponseIntoRequest : Response -> Request
@@ -105,11 +187,35 @@ decodeHitResponseIntoRequest hitResponse =
             JD.decodeString requestDecoder hitResponse.body
     in
         case result of
-            Ok decodedValue ->
-                decodedValue
+            Ok v ->
+                let
+                    extractedCreds =
+                        ( v.username, v.password )
+
+                    bA =
+                        case extractedCreds of
+                            ( Nothing, Nothing ) ->
+                                Nothing
+
+                            ( Just a, Nothing ) ->
+                                Just { username = a, password = "" }
+
+                            ( Nothing, Just a ) ->
+                                Just { username = "", password = a }
+
+                            ( Just u, Just p ) ->
+                                Just { username = u, password = p }
+                in
+                    { url = v.url
+                    , httpMethod = v.httpMethod
+                    , requestParameters = v.requestParameters
+                    , requestHeaders = v.requestHeaders
+                    , basicAuthentication = bA
+                    , requestBody = v.requestBody
+                    }
 
             Err err ->
-                Models.emptyRequest
+                emptyRequest
 
 
 decodeHeadersFromHitResponse : Response -> List ( String, String )

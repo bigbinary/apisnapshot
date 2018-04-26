@@ -1,9 +1,12 @@
 module Router exposing (..)
 
-import Models exposing (Route(..))
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 
+type Route
+    = HomeRoute
+    | HitRoute String
+    | NotFound
 
 matchers : Parser (Route -> a) a
 matchers =

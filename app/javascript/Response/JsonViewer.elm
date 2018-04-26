@@ -1,4 +1,4 @@
-module JsonViewer exposing (fromJSVal, view, rootNodePath)
+module Response.JsonViewer exposing (fromJSVal, view, rootNodePath, Msg, init, update, Model, getRootNode)
 
 {-| JsonViewer transforms the parsed JSON data (`JSVal`) into the
 renderable structure `JsonView`, and provides a renderer for it in
@@ -28,10 +28,20 @@ to maintain a list of collapsed nodes.
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import JsonViewerTypes exposing (..)
-import JSVal
-import Msgs exposing (Msg)
+import Response.JsonViewerTypes as JsonViewerTypes exposing (..)
+import Response.JSVal as JSVal
+import Utils.HttpUtil as HttpUtil
 import Set
+
+
+type alias Model =
+    CollapsedNodePaths
+
+
+init : CollapsedNodePaths
+init =
+    Set.empty
+
 
 
 -- Indentation in pixels when rendering a nested structure
@@ -55,6 +65,17 @@ arrowDown =
 rootNodePath : NodePath
 rootNodePath =
     "root"
+
+
+getRootNode : HttpUtil.Response -> CollapsedNodePaths -> Node
+getRootNode body collapsedNodePaths =
+    { jsonVal =
+        fromJSVal
+            (HttpUtil.decodeHitResponseBodyIntoJson body)
+    , nodePath = rootNodePath
+    , depth = 0
+    , collapsedNodePaths = collapsedNodePaths
+    }
 
 
 type alias Node =
@@ -126,6 +147,28 @@ fromJSVal jsVal =
 
 
 
+-- UPDATE --
+
+
+type Msg
+    = ToggleJsonCollectionView String
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg collapsedNodePaths =
+    case msg of
+        ToggleJsonCollectionView id ->
+            let
+                updatedModel =
+                    if Set.member id collapsedNodePaths then
+                        Set.remove id collapsedNodePaths
+                    else
+                        Set.insert id collapsedNodePaths
+            in
+                ( updatedModel, Cmd.none )
+
+
+
 ---- VIEW ----
 
 
@@ -141,7 +184,7 @@ collectionItemPrefix node =
         render collection caption =
             span
                 [ class "JsonView__collapsible"
-                , onClick (Msgs.ToggleJsonCollectionView nodePath)
+                , onClick (ToggleJsonCollectionView nodePath)
                 ]
                 [ if isCollapsed then
                     arrowRight

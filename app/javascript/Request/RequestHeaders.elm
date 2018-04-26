@@ -1,25 +1,11 @@
-module Pages.Hit.RequestHeaders
-    exposing
-        ( RequestHeader
-        , RequestHeaders
-        , empty
-        , push
-        , pushBlank
-        , remove
-        , requestHeadersEncoder
-        , updateName
-        , updateValue
-        , valid
-        , view
-        )
+module Request.RequestHeaders exposing (..)
 
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Encode exposing (..)
-import Msgs exposing (Msg)
-import Util exposing (isStringPresent)
+import Utils.Util exposing (isStringPresent)
 
 
 -- TYPES --
@@ -39,10 +25,6 @@ type alias RequestHeaders =
     Dict Position RequestHeader
 
 
-
--- CONSTANTS --
-
-
 blankRequestHeader : RequestHeader
 blankRequestHeader =
     RequestHeader "" ""
@@ -54,27 +36,50 @@ empty =
 
 
 
--- ENCODERS
+-- UPDATE --
 
 
-requestHeadersEncoder : RequestHeaders -> Value
-requestHeadersEncoder requestParamters =
-    Dict.map requestHeaderEncoder requestParamters
-        |> Dict.toList
-        |> List.map (\( key, value ) -> ( toString key, value ))
-        |> Json.Encode.object
+type Msg
+    = AddRequestHeader
+    | ChangeRequestHeaderAttribute String Int String
+    | DeleteRequestHeader Int
 
 
-requestHeaderEncoder : Int -> RequestHeader -> Value
-requestHeaderEncoder index requestHeader =
-    Json.Encode.object
-        [ ( "key", string requestHeader.key )
-        , ( "value", string requestHeader.value )
-        ]
+addHeaders requestHeaders =
+    let
+        newRequestHeaders =
+            pushBlank requestHeaders
+    in
+        ( newRequestHeaders, Cmd.none )
 
 
+update : Msg -> RequestHeaders -> ( RequestHeaders, Cmd Msg )
+update msg requestHeaders =
+    case msg of
+        AddRequestHeader ->
+            addHeaders requestHeaders
 
--- METHODS --
+        ChangeRequestHeaderAttribute label index value ->
+            let
+                newRequestHeaders =
+                    case label of
+                        "Name" ->
+                            updateName index value requestHeaders
+
+                        "Value" ->
+                            updateValue index value requestHeaders
+
+                        _ ->
+                            requestHeaders
+            in
+                ( newRequestHeaders, Cmd.none )
+
+        DeleteRequestHeader index ->
+            let
+                newRequestHeaders =
+                    remove index requestHeaders
+            in
+                ( newRequestHeaders, Cmd.none )
 
 
 pushBlank : RequestHeaders -> RequestHeaders
@@ -149,7 +154,7 @@ viewRequestHeader showErrors position requestHeader =
             [ a
                 [ href "javascript:void(0)"
                 , class "RequestHeaders__delete"
-                , onClick (Msgs.DeleteRequestHeader position)
+                , onClick (DeleteRequestHeader position)
                 ]
                 [ text "×" ]
             ]
@@ -183,7 +188,7 @@ viewRequestHeaderAttribute label position value_ showErrors =
                 , placeholder ("Enter " ++ label)
                 , class updatedClass
                 , value value_
-                , onInput (Msgs.ChangeRequestHeaderAttribute label position)
+                , onInput (ChangeRequestHeaderAttribute label position)
                 ]
                 []
             , viewValidationError
@@ -205,14 +210,10 @@ view requestHeaders showErrors =
     div [ class "form-group" ]
         [ div [ class "form-group__label" ]
             [ span [] [ text "Request Headers" ]
-            , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestHeader ] [ text "Add Header" ]
+            , a [ href "javascript:void(0)", class "devise-links", onClick AddRequestHeader ] [ text "Add Header" ]
             ]
         , viewRequestHeaders requestHeaders showErrors
         ]
-
-
-
--- UTILITY FUNCTIONS
 
 
 valid : RequestHeaders -> Bool
@@ -222,3 +223,23 @@ valid requestHeaders =
         |> List.map (\{ key, value } -> isStringPresent key && isStringPresent value)
         |> List.member False
         |> not
+
+
+
+-- ENCODERS
+
+
+requestHeadersEncoder : RequestHeaders -> Value
+requestHeadersEncoder requestParamters =
+    Dict.map requestHeaderEncoder requestParamters
+        |> Dict.toList
+        |> List.map (\( key, value ) -> ( toString key, value ))
+        |> Json.Encode.object
+
+
+requestHeaderEncoder : Int -> RequestHeader -> Value
+requestHeaderEncoder index requestHeader =
+    Json.Encode.object
+        [ ( "key", string requestHeader.key )
+        , ( "value", string requestHeader.value )
+        ]

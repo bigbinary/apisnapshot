@@ -1,4 +1,4 @@
-module JsonViewerTypes exposing (..)
+module Response.JsonViewerTypes exposing (..)
 
 import Set
 

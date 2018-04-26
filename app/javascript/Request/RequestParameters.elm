@@ -1,28 +1,11 @@
-module Pages.Hit.RequestParameters
-    exposing
-        ( RequestParameter
-        , RequestParameters
-        , empty
-        , push
-        , pushBlank
-        , remove
-        , requestParametersEncoder
-        , updateName
-        , updateValue
-        , valid
-        , view
-        )
+module Request.RequestParameters exposing (..)
 
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Encode exposing (..)
-import Msgs exposing (Msg)
-import Util exposing (isStringPresent)
-
-
--- TYPES --
+import Utils.Util exposing (isStringPresent)
 
 
 type alias RequestParameter =
@@ -39,10 +22,6 @@ type alias RequestParameters =
     Dict Position RequestParameter
 
 
-
--- CONSTANTS --
-
-
 blankRequestParameter : RequestParameter
 blankRequestParameter =
     RequestParameter "" ""
@@ -54,27 +33,49 @@ empty =
 
 
 
--- ENCODERS
+-- UPDATE --
 
 
-requestParametersEncoder : RequestParameters -> Value
-requestParametersEncoder requestParamters =
-    Dict.map requestParameterEncoder requestParamters
-        |> Dict.toList
-        |> List.map (\( key, value ) -> ( toString key, value ))
-        |> Json.Encode.object
+type Msg
+    = AddRequestParameter
+    | ChangeRequestParameterName Int String
+    | ChangeRequestParameterValue Int String
+    | DeleteRequestParameter Int
 
 
-requestParameterEncoder : Int -> RequestParameter -> Value
-requestParameterEncoder index requestParameter =
-    Json.Encode.object
-        [ ( "key", string requestParameter.key )
-        , ( "value", string requestParameter.value )
-        ]
+addParameters rp =
+    let
+        newRequestParameters =
+            pushBlank rp
+    in
+        ( newRequestParameters, Cmd.none )
 
 
+update msg model =
+    case msg of
+        AddRequestParameter ->
+            addParameters model
 
--- METHODS --
+        ChangeRequestParameterName index newName ->
+            let
+                newRequestParameters =
+                    updateName index newName model
+            in
+                ( newRequestParameters, Cmd.none )
+
+        ChangeRequestParameterValue index newValue ->
+            let
+                newRequestParameters =
+                    updateValue index newValue model
+            in
+                ( newRequestParameters, Cmd.none )
+
+        DeleteRequestParameter index ->
+            let
+                newRequestParameters =
+                    remove index model
+            in
+                ( newRequestParameters, Cmd.none )
 
 
 pushBlank : RequestParameters -> RequestParameters
@@ -150,7 +151,7 @@ viewRequestParameter showErrors position requestParameter =
                 , placeholder "Enter Value"
                 , class "input form-control api-req-form__input"
                 , value requestParameter.value
-                , onInput (Msgs.ChangeRequestParameterValue position)
+                , onInput (ChangeRequestParameterValue position)
                 ]
                 []
             ]
@@ -158,7 +159,7 @@ viewRequestParameter showErrors position requestParameter =
             [ a
                 [ href "javascript:void(0)"
                 , class "RequestParameters__delete"
-                , onClick (Msgs.DeleteRequestParameter position)
+                , onClick (DeleteRequestParameter position)
                 ]
                 [ text "×" ]
             ]
@@ -192,7 +193,7 @@ viewRequestParameterName position { key } showErrors =
                 , placeholder "Enter Name"
                 , class updatedClass
                 , value key
-                , onInput (Msgs.ChangeRequestParameterName position)
+                , onInput (ChangeRequestParameterName position)
                 ]
                 []
             , viewValidationError
@@ -214,7 +215,7 @@ view requestParameters showErrors =
     div [ class "form-group" ]
         [ div [ class "form-group__label" ]
             [ span [] [ text "Request Parameters" ]
-            , a [ href "javascript:void(0)", class "devise-links", onClick Msgs.AddRequestParameter ] [ text "Add Parameter" ]
+            , a [ href "javascript:void(0)", class "devise-links", onClick AddRequestParameter ] [ text "Add Parameter" ]
             ]
         , viewRequestParameters requestParameters showErrors
         ]
@@ -231,3 +232,23 @@ valid requestParameters =
         |> List.map (\{ key } -> isStringPresent key)
         |> List.member False
         |> not
+
+
+
+-- ENCODERS
+
+
+requestParametersEncoder : RequestParameters -> Value
+requestParametersEncoder requestParamters =
+    Dict.map requestParameterEncoder requestParamters
+        |> Dict.toList
+        |> List.map (\( key, value ) -> ( toString key, value ))
+        |> Json.Encode.object
+
+
+requestParameterEncoder : Int -> RequestParameter -> Value
+requestParameterEncoder index requestParameter =
+    Json.Encode.object
+        [ ( "key", string requestParameter.key )
+        , ( "value", string requestParameter.value )
+        ]

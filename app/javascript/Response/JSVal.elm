@@ -1,4 +1,4 @@
-module JSVal exposing (..)
+module Response.JSVal exposing (..)
 
 import Json.Decode as Decode exposing (Decoder, Value)
 

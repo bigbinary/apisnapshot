@@ -1,16 +1,72 @@
-module Pages.Hit.Response exposing (..)
+module Response.MainResponse exposing (..)
 
-import Msgs exposing (Msg)
-import JsonViewer
-import HttpUtil
+import Response.JsonViewer as JsonViewer
+import Utils.HttpUtil as HttpUtil exposing (Response)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
-import Models exposing (Model)
 import Html.Events exposing (..)
-import Response exposing (..)
 import RemoteData
-import Util
+import Date.Extra as Date
+
+
+-- MODEL --
+
+
+type ResponseViewing
+    = Formatted
+    | Raw
+
+
+type alias Model =
+    { response : RemoteData.WebData HttpUtil.Response
+    , responseViewing : ResponseViewing
+    , jsonViewer : JsonViewer.Model
+    }
+
+
+init : Model
+init =
+    { response = RemoteData.NotAsked
+    , responseViewing = Formatted
+    , jsonViewer = JsonViewer.init
+    }
+
+
+
+-- UPDATE --
+
+
+type Msg
+    = SetResponseViewType ResponseViewing
+    | JsonViewerMsg JsonViewer.Msg
+    | UpdateResponse (RemoteData.WebData HttpUtil.Response)
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        SetResponseViewType v ->
+            ( { model | responseViewing = v }, Cmd.none )
+
+        JsonViewerMsg jMsg ->
+            case model.response of
+                RemoteData.Success response ->
+                    let
+                        ( updatedJv, subCmd ) =
+                            JsonViewer.update jMsg model.jsonViewer
+                    in
+                        ( { model | jsonViewer = updatedJv }, Cmd.map JsonViewerMsg subCmd )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        UpdateResponse newResponse ->
+            ( { model | response = newResponse }, Cmd.none )
+
+
+
+-- VIEW --
 
 
 view : Model -> Html Msg
@@ -68,30 +124,22 @@ bodyTabMarkup response model =
 
 formattedOrRawView : Response -> Model -> Html Msg
 formattedOrRawView response model =
-    if model.responseViewing == Raw then
-        rawResponseMarkup response
-    else
-        formattedResponseMarkup response model
+    case model.responseViewing of
+        Raw ->
+            rawResponseMarkup response
+
+        Formatted ->
+            formattedResponseMarkup response model
 
 
 formattedResponseMarkup : Response -> Model -> Html Msg
 formattedResponseMarkup response model =
-    let
-        rootNode =
-            { jsonVal =
-                JsonViewer.fromJSVal
-                    (HttpUtil.decodeHitResponseBodyIntoJson response)
-            , nodePath = JsonViewer.rootNodePath
-            , depth = 0
-            , collapsedNodePaths = model.collapsedNodePaths
-            }
-    in
-        h5 []
-            [ text "Formatted response"
-            , a [ class "btn", href "javascript:void(0)", onClick Msgs.ShowRawResponse ] [ text "Switch to raw response" ]
-            , pre [ class "api-res__res" ]
-                [ span [ class "block" ] [ JsonViewer.view rootNode ] ]
-            ]
+    h5 []
+        [ text "Formatted response"
+        , a [ class "btn", href "javascript:void(0)", onClick (SetResponseViewType Raw) ] [ text "Switch to raw response" ]
+        , pre [ class "api-res__res" ]
+            [ span [ class "block" ] [ JsonViewer.view (JsonViewer.getRootNode response model.jsonViewer) |> Html.map JsonViewerMsg ] ]
+        ]
 
 
 errorMarkup : Http.Error -> Html Msg
@@ -132,7 +180,7 @@ httpStatusMarkup response =
                         [ span
                             [ class "api-res-form__label" ]
                             [ strong [] [ text "Date: " ]
-                            , Util.formatAndLocalizeDatetime dateString |> text
+                            , formatAndLocalizeDatetime dateString |> text
                             ]
                         ]
 
@@ -150,6 +198,16 @@ httpStatusMarkup response =
                 ]
             , responseCreatedAtMarkup
             ]
+
+
+formatAndLocalizeDatetime : String -> String
+formatAndLocalizeDatetime dateString =
+    case Date.fromIsoString dateString of
+        Just date ->
+            Date.toFormattedString "ddd MMMM y, h:mm a" date
+
+        Nothing ->
+            dateString
 
 
 bodyHeadersNavBar : Html msg
@@ -176,10 +234,14 @@ bodyHeadersNavBar =
 
 rawResponseMarkup : Http.Response String -> Html Msg
 rawResponseMarkup response =
-    div []
-        [ h5 []
-            [ text "Raw Response"
-            , a [ class "btn", href "javascript:void(0)", onClick Msgs.ShowFormattedResponse ] [ text "Switch to formatted response" ]
+    let
+        parsedResponse =
+            HttpUtil.decodeResponseBodyToString response
+    in
+        div []
+            [ h5 []
+                [ text "Raw Response"
+                , a [ class "btn", href "javascript:void(0)", onClick (SetResponseViewType Formatted) ] [ text "Switch to formatted response" ]
+                ]
+            , pre [ class "form-control" ] [ text parsedResponse ]
             ]
-        , pre [ class "form-control" ] [ text response.body ]
-        ]

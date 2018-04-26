@@ -1,4 +1,4 @@
-module HttpMethods exposing (..)
+module Utils.HttpMethods exposing (..)
 
 
 type HttpMethod
