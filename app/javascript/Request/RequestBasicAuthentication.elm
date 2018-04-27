@@ -83,7 +83,7 @@ view b =
                 , div [ class "col" ]
                     [ a
                         [ href "javascript:void(0)"
-                        , class "RequestBasicAuthentication__delete"
+                        , class "row__delete"
                         , onClick (RemoveBasicAuthentication)
                         ]
                         [ text "×" ]

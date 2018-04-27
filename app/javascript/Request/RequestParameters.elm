@@ -158,7 +158,7 @@ viewRequestParameter showErrors position requestParameter =
         , div [ class "col" ]
             [ a
                 [ href "javascript:void(0)"
-                , class "RequestParameters__delete"
+                , class "row__delete"
                 , onClick (DeleteRequestParameter position)
                 ]
                 [ text "×" ]

@@ -16,7 +16,7 @@ elm-package install
 ## Local Development
 
 ```
-foreman start -f Procfile.dev
+npm start
 ```
 
 Once it shows
