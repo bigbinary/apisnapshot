@@ -78,14 +78,20 @@ h3 {
     margin-left: 10em;
 }
 
-.RequestParameters__delete, .RequestHeaders__delete {
+.form-row:hover .row__delete {
+    opacity: 1;
+}
+
+.row__delete {
     color: #999;
     font-size: 18px;
     font-weight: bold;
-    padding: 5px;
+    padding: 10px 5px;
+    display: block;
+    opacity: 0;
 }
 
-.RequestParameters__delete:hover, .RequestHeaders__delete:hover {
+.row__delete:hover {
     color: #000;
     text-decoration: none;
 }
@@ -261,9 +267,7 @@ html, body {
     color: gray;
 }
 .api-req-form__input {
-    width: 250px;
-    margin-right: 20px;
-    margin-bottom: 5px;
+    margin: 5px 20px 5px 0px;
 }
 .api-res-form__label {
     color: gray;

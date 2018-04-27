@@ -153,7 +153,7 @@ viewRequestHeader showErrors position requestHeader =
         , div [ class "col" ]
             [ a
                 [ href "javascript:void(0)"
-                , class "RequestHeaders__delete"
+                , class "row__delete"
                 , onClick (DeleteRequestHeader position)
                 ]
                 [ text "×" ]

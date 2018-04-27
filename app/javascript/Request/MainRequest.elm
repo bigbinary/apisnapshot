@@ -311,9 +311,9 @@ formView ({ request } as model) =
             , morePullDownMenu
             , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
             ]
-        , requestParametersView request model.showErrors |> Html.map RequestParameterMsg
-        , requestHeadersView request model.showErrors |> Html.map RequestHeaderMsg
         , requestBasicAuthenticationView request |> Html.map RequestBasicAuthenticationMsg
+        , requestHeadersView request model.showErrors |> Html.map RequestHeaderMsg
+        , requestParametersView request model.showErrors |> Html.map RequestParameterMsg
         , requestBodyView request model.showErrors |> Html.map RequestBodyMsg
         ]
 
@@ -370,32 +370,22 @@ morePullDownMenu =
             [ text "More" ]
         , div
             [ class "dropdown-menu", attribute "aria-labelledby" "dropdownMenuButton" ]
-            [ a
-                [ class "dropdown-item"
-                , href "javascript:void(0)"
-                , onClick <| MoreActionsDropdownChange DDAddParameter
-                ]
-                [ text <| dropDownActionToString DDAddParameter ]
-            , a
-                [ class "dropdown-item"
-                , href "javascript:void(0)"
-                , onClick <| MoreActionsDropdownChange DDAddHeader
-                ]
-                [ text <| dropDownActionToString DDAddHeader ]
-            , a
-                [ class "dropdown-item"
-                , href "javascript:void(0)"
-                , onClick <| MoreActionsDropdownChange DDAddBody
-                ]
-                [ text <| dropDownActionToString DDAddBody ]
-            , a
-                [ class "dropdown-item"
-                , href "javascript:void(0)"
-                , onClick <| MoreActionsDropdownChange DDAddBasicAuthentication
-                ]
-                [ text <| dropDownActionToString DDAddBasicAuthentication ]
+            [ dropDownItem DDAddBasicAuthentication
+            , dropDownItem DDAddHeader
+            , dropDownItem DDAddParameter
+            , dropDownItem DDAddBody
             ]
         ]
+
+
+dropDownItem : DropDownAction -> Html Msg
+dropDownItem item =
+    a
+        [ class "dropdown-item"
+        , href "javascript:void(0)"
+        , onClick <| MoreActionsDropdownChange item
+        ]
+        [ text <| dropDownActionToString item ]
 
 
 dropDownActionToString : DropDownAction -> String
