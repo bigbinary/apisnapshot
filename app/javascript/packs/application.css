@@ -280,9 +280,6 @@ html, body {
 .api-req-form__textarea {
     margin-top: 15px;
 }
-.api-req-form__assertion-select {
-    margin-right: 20px;
-}
 .api-req-form__form-inline {
     margin-top: 10px;
 }
@@ -332,21 +329,6 @@ html, body {
     vertical-align: top;
     list-style: none;
     padding-left: 10px;
-}
-.api-res-form__assertions {
-    display: inline-block;
-    vertical-align: top;
-    padding-left: 10px;
-    list-style: none;
-}
-.api-res-form__assertions i {
-    margin-right: 5px;
-}
-.api-res-form__assertion--success i {
-    color: green;
-}
-.api-res-form__assertion--fail i {
-    color: red;
 }
 .api-req-form__more-text {
     margin-right: 5px;

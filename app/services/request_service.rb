@@ -1,7 +1,7 @@
 class RequestService
   include ActiveModel::Validations
 
-  attr_reader :url, :username, :password, :method, :response, :request_params, :request_headers, :request_body, :assertions
+  attr_reader :url, :username, :password, :method, :response, :request_params, :request_headers, :request_body
   attr_accessor :api_response
 
   validates :url, :method, presence: true
@@ -14,7 +14,6 @@ class RequestService
     @request_params = options[:request_params]
     @request_body = options[:request_body]
     @request_headers = options[:request_headers]
-    @assertions = options[:assertions]
   end
 
   def process
@@ -45,7 +44,7 @@ class RequestService
                         request_params: request_params.is_a?(String) ? JSON.parse(request_params) : sanitized_request_params,
                         username: username,
                         password: password,
-                        request_body: request_body }.merge(assertion_attributes)
+                        request_body: request_body }
                        )
   end
 
@@ -75,11 +74,4 @@ class RequestService
     {url: url, method: method, :verify_ssl => false, headers: request_headers}.merge(authorization_options).merge(payload: request_params)
   end
 
-  def assertion_attributes
-    if assertions.present?
-      { assertions_attributes: assertions }
-    else
-      {}
-    end
-  end
 end

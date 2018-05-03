@@ -16,20 +16,6 @@ ActiveRecord::Schema.define(version: 20171222085456) do
   enable_extension "plpgsql"
   enable_extension "hstore"
 
-  create_table "api_assertions", force: :cascade do |t|
-    t.string "key"
-    t.string "value"
-    t.string "comparison"
-    t.string "kind"
-    t.string "api_value"
-    t.string "comments"
-    t.boolean "success", default: false
-    t.bigint "api_response_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["api_response_id"], name: "index_api_assertions_on_api_response_id"
-  end
-
   create_table "api_responses", force: :cascade do |t|
     t.string "url"
     t.string "method"
