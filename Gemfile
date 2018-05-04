@@ -23,7 +23,7 @@ gem 'pg'
 gem 'rest-client'
 
 # for deleting records periodically
-gem 'delayed_job_recurring'
+gem 'scheduled_job'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
