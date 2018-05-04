@@ -22,6 +22,9 @@ gem 'pg'
 # For making HTTP requests outside the app
 gem 'rest-client'
 
+# for deleting records periodically
+gem 'delayed_job_recurring'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
