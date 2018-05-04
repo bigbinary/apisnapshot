@@ -1,4 +1,4 @@
-# ElmSanity
+# ApiSnapshot
 
 
 ## Setup
@@ -19,10 +19,7 @@ elm-package install
 npm start
 ```
 
-Once it shows
-`webpack: Compiled successfully.` message in the terminal,
-access the app at http://localhost:3333.
+Once it shows `webpack: Compiled successfully.` message in the terminal,
+visit the app at http://localhost:3333.
 
-Webpack will automatically compile
-if a file inside `app/javascript/` directory
-is modified.
+Webpack will automatically compile if a file inside `app/javascript/` directory is modified.
