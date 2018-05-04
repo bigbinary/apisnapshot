@@ -4,10 +4,8 @@ class PurgeRecordJob
 
     include ::ScheduledJob
 
-    run_every 1.hour
-
     def perform
-        Rails.logger.info "Going to purge old recordscod"
+        ScheduledJob.logger.info "Going to purge old records"
         ApiResponse.where("created_at < ? ", RETAIN_RECORDS_FOR_IN_DAYS.days.ago).delete_all
     end
 

@@ -23,6 +23,7 @@ gem 'pg'
 gem 'rest-client'
 
 # for deleting records periodically
+gem 'delayed_job_active_record'
 gem 'scheduled_job'
 
 group :development, :test do
