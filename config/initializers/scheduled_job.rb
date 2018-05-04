@@ -3,7 +3,6 @@ if Delayed::Worker.delay_jobs && !($PROGRAM_NAME =~ /(rake|delayed_job)(.rb)?$/)
   PurgeRecordJob.schedule_job
 end
 
-
 ScheduledJob.configure do |config|
   config.logger = Rails.logger
 end

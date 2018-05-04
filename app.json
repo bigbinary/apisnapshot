@@ -1,10 +1,21 @@
 {
   "name": "apisnapshot",
-  "description": "",
   "scripts": {},
   "env": {
     "SECRET_KEY_BASE": {
       "generator": "secret"
+    },
+    "RACK_ENV": {
+      "value": "staging"
+    },
+    "RAILS_ENV": {
+      "value": "staging"
+    },
+    "HEROKU_APP_NAME": {
+      "required": true
+    },
+    "LOG_LEVEL": {
+      "value": "DEBUG"
     }
   },
   "formation": {
