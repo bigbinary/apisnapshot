@@ -1,22 +1,22 @@
 development:
   adapter: postgresql
-  database: elmsanity_development
+  database: apisnapshot_development
   host: localhost
   pool: 5
 
 staging:
   adapter: postgresql
-  database: elmsanity_staging
+  database: apisnapshot_staging
   pool: 5
   timeout: 5000
 
 production:
   adapter: postgresql
-  database: elmsanity_production
+  database: apisnapshot_production
   pool: 5
   timeout: 5000
 
 test:
   adapter: postgresql
-  database: elmsanity_test
+  database: apisnapshot_test
   pool: 5

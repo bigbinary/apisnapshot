@@ -1,5 +1,5 @@
 {
-  "name": "elmsanity",
+  "name": "apisnapshot",
   "private": true,
   "dependencies": {
     "@rails/webpacker": "^3.0.2",
@@ -22,6 +22,9 @@
     "precommit": "lint-staged"
   },
   "lint-staged": {
-      "*.elm": ["elm-format --yes", "git add"]
+    "*.elm": [
+      "elm-format --yes",
+      "git add"
+    ]
   }
 }
