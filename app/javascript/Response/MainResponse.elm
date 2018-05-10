@@ -108,7 +108,7 @@ headersTabMarkup response =
             tr [] [ td [] [ strong [] [ text key ] ], td [] [ text value ] ]
     in
         div [ class "tab-pane fade", id "response-headers" ]
-            [ table []
+            [ table [ class "table" ]
                 (List.map
                     headerRow
                     (HttpUtil.decodeHeadersFromHitResponse response)

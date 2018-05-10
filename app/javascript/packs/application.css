@@ -1,11 +1,64 @@
 @import '~bootstrap/dist/css/bootstrap';
 
 body {
-    font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
     font-size: 14px;
     margin: 0;
     text-align: left;
-    color: #293c4b;
+    color: #444;
+}
+
+* {
+    &:focus, &:active {
+        outline: none;
+    }
+}
+
+a {
+    color: #333;
+
+    &:hover {
+        color: #337ab7;
+    }
+}
+
+strong {
+    font-weight: 500;
+}
+
+.btn {
+    cursor: pointer;
+
+    &:focus, &:active {
+        box-shadow: none !important;
+    }
+
+    &.btn-primary {
+        color: #fff;
+        background-color: #337ab7;
+        border-color: #2e6da4;
+
+        &:hover {
+            background: #286090;
+            border-color: #204d74;
+        }
+    }
+
+    &.btn-default {
+        color: #444;
+
+        &:hover {
+            color: #333;
+        }
+    }
+}
+
+.dropdown-item {
+    color: #444;
+
+    &:hover {
+        color: #333;
+    }
 }
 
 div {
@@ -24,16 +77,32 @@ h3 {
 
 .navbar {
     min-height: 4rem;
-    background-color: #000;
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.05),inset 0 -1px 0 rgba(0,0,0,.1);
+    margin-bottom: 0;
+    padding: 0 20px;
+    background: #ededed;
+    box-shadow: none;
+    border: 0;
     position: -webkit-sticky;
     position: sticky;
     top: 0;
     z-index: 1;
+
+    .navbar-brand {
+        color: #333;
+        font-weight: 500;
+
+        &:hover {
+            color: #111;
+        }
+    }
 }
 
-.container.main {
-    margin-top: 15px;
+.container {
+    max-width: 95%;
+}
+
+.main {
+    margin-top: 20px;
 }
 
 .form-group {

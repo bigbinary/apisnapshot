@@ -362,14 +362,14 @@ morePullDownMenu =
     div [ class "dropdown api-req-form__btn-group btn-group" ]
         [ button
             [ type_ "button"
-            , class "btn btn-primary dropdown-toggle"
+            , class "btn btn-default dropdown-toggle"
             , attribute "data-toggle" "dropdown"
             , attribute "aria-haspopup" "true"
             , attribute "aria-expanded" "false"
             ]
             [ text "More" ]
         , div
-            [ class "dropdown-menu", attribute "aria-labelledby" "dropdownMenuButton" ]
+            [ class "dropdown-menu dropdown-menu-right", attribute "aria-labelledby" "dropdownMenuButton" ]
             [ dropDownItem DDAddBasicAuthentication
             , dropDownItem DDAddHeader
             , dropDownItem DDAddParameter
