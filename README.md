@@ -8,7 +8,9 @@ If you submit another request then you will get another URL.
 
 Please note that records are deleted after 7 days.
 
+## Technology Stack
 
+This project is built using Elm and Ruby on Rails.
 
 ## Local Development Setup
 
