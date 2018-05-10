@@ -10,21 +10,21 @@ Please note that records are deleted after 7 days.
 
 
 
-## Setup
+## Local Development Setup
 
 ```
 cp config/database.yml.postgresql config/database.yml
+
 ./bin/bundle install
+
 ./bin/rails db:setup
+
 ./bin/yarn install
+
 npm install -g elm
+
 elm-package install
-```
 
-
-## Local Development
-
-```
 npm start
 ```
 
