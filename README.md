@@ -1,5 +1,14 @@
 # ApiSnapshot
 
+Takes a snapshot of the API response and creates a unique URL for each response. 
+Now you can share that URL in email, slack or anywhere else.
+The URL and the data it shows can't be changed.
+
+If you submit another request then you will get another URL. 
+
+Please note that records are deleted after 7 days.
+
+
 
 ## Setup
 
