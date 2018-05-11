@@ -30,10 +30,10 @@ elm-package install
 npm start
 ```
 
-Once it shows `webpack: Compiled successfully.` message in the terminal,
-visit the app at http://localhost:3333.
+Once we see `webpack: Compiled successfully.` message in terminal,
+we can visit the app at http://localhost:3333.
 
-Webpack will automatically compile if a file inside `app/javascript/` directory is modified.
+Webpack will automatically compile if a file inside `app/javascript/` directory is modified in development mode.
 
 ## Heroku Review
 
