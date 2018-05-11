@@ -15,10 +15,10 @@ body {
 }
 
 a {
-    color: #333;
+    color: #3845a5;
 
     &:hover {
-        color: #337ab7;
+        color: #333;
     }
 }
 
@@ -35,13 +35,8 @@ strong {
 
     &.btn-primary {
         color: #fff;
-        background-color: #337ab7;
-        border-color: #2e6da4;
-
-        &:hover {
-            background: #286090;
-            border-color: #204d74;
-        }
+        background-color: #3845a5;
+        border-color: #3845a5;
     }
 
     &.btn-default {
@@ -79,7 +74,7 @@ h3 {
     min-height: 4rem;
     margin-bottom: 0;
     padding: 0 20px;
-    background: #ededed;
+    background: #3845a5;
     box-shadow: none;
     border: 0;
     position: -webkit-sticky;
@@ -88,12 +83,16 @@ h3 {
     z-index: 1;
 
     .navbar-brand {
-        color: #333;
+        color: #fff;
         font-weight: 500;
 
         &:hover {
-            color: #111;
+            color: #fff;
         }
+    }
+
+    .nav-link {
+        color: #fff;
     }
 }
 
@@ -102,7 +101,7 @@ h3 {
 }
 
 .main {
-    margin-top: 20px;
+    margin-top: 40px;
 }
 
 .form-group {

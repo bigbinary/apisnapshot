@@ -309,7 +309,7 @@ formView ({ request } as model) =
             [ httpMethodDropdown request.httpMethod
             , urlInputField model
             , morePullDownMenu
-            , button [ class "btn btn-primary", type_ "Submit" ] [ text "SEND" ]
+            , button [ class "btn btn-primary", type_ "Submit" ] [ text "Send" ]
             ]
         , requestBasicAuthenticationView request |> Html.map RequestBasicAuthenticationMsg
         , requestHeadersView request model.showErrors |> Html.map RequestHeaderMsg
