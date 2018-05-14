@@ -27,7 +27,7 @@ npm install -g elm
 
 elm-package install
 
-npm start
+./bin/yarn start
 ```
 
 Once we see `webpack: Compiled successfully.` message in terminal,
