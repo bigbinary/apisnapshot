@@ -52,6 +52,8 @@ class ApiResponsesController < ApplicationController
   end
 
   def api_request_params
-    params.permit(:url, :method, :request_body, request_headers: [:key, :value], request_parameters: [:key, :value])
+    params.permit(:url, :method, :request_body,
+                  request_headers: [:key, :value],
+                  request_parameters: [:key, :value])
   end
 end

@@ -1,7 +1,8 @@
 class RequestService
   include ActiveModel::Validations
 
-  attr_reader :url, :username, :password, :method, :response, :request_parameters, :request_headers, :request_body
+  attr_reader :url, :username, :password, :method, :response,
+              :request_parameters, :request_headers, :request_body
   attr_accessor :api_response
 
   validates :url, :method, presence: true
