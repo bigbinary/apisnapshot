@@ -4,7 +4,9 @@ class ApiResponsesController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def show
-    render json: api_response
+    respond_to do |format|
+      format.json
+    end
   end
 
   def create
@@ -26,24 +28,6 @@ class ApiResponsesController < ApplicationController
     unless @api_response = ApiResponse.find_by({token: params[:id]})
       render json: {error: "Invalid Page"}, status: 404
     end
-  end
-
-  def api_response
-    {
-      url: @api_response.url,
-      createdAt: @api_response.created_at,
-      httpMethod: @api_response.method,
-      requestParams: @api_response.request_params,
-      requestHeaders: @api_response.request_headers,
-      requestBody: @api_response.request_body,
-      username: @api_response.username,
-      password: @api_response.password,
-      response: {
-        response_headers: @api_response.response_headers.sort.to_h,
-        response_body: @api_response.response['body'],
-        response_code: @api_response.status_code
-      }
-    }
   end
 
   def options_for_request_service
