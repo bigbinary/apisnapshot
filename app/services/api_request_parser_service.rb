@@ -12,6 +12,8 @@ class ApiRequestParserService
     {request_parameters: parse_request_params, request_headers: parse_request_headers}
   end
 
+  private
+
   def parse_request_params
     if request_parameters.present?
       parse(request_parameters)
