@@ -1,17 +1,18 @@
 class RequestService
   include ActiveModel::Validations
 
-  attr_reader :url, :username, :password, :method, :response, :request_params, :request_headers, :request_body
+  attr_reader :url, :username, :password, :method, :response,
+              :request_parameters, :request_headers, :request_body
   attr_accessor :api_response
 
   validates :url, :method, presence: true
 
-  def initialize(url, method, options={})
+  def initialize(url:, method: nil, options: {})
     @url = url
     @method = method || :get
     @username = options[:username]
     @password = options[:password]
-    @request_params = options[:request_params]
+    @request_parameters = options[:request_parameters]
     @request_body = options[:request_body]
     @request_headers = options[:request_headers]
   end
@@ -41,16 +42,20 @@ class RequestService
                         response_headers: response.headers,
                         status_code: response.code,
                         request_headers: request_headers,
-                        request_params: request_params.is_a?(String) ? JSON.parse(request_params) : sanitized_request_params,
+                        request_params: request_parameters_to_save,
                         username: username,
                         password: password,
                         request_body: request_body }
                        )
   end
 
-  def sanitized_request_params
+  def request_parameters_to_save
+    request_parameters.is_a?(String) ? JSON.parse(request_parameters) : sanitized_request_parameters
+  end
+
+  def sanitized_request_parameters
     {}.tap do |return_value|
-      request_params.each do |key, value|
+      request_parameters.each do |key, value|
         return_value[key] = value.is_a?(ActionDispatch::Http::UploadedFile) ? '' : value
       end
     end
@@ -71,7 +76,12 @@ class RequestService
   end
 
   def options
-    {url: url, method: method, :verify_ssl => false, headers: request_headers}.merge(authorization_options).merge(payload: request_params)
+    {url: url,
+     method: method,
+     verify_ssl: false,
+     payload: request_parameters,
+     headers: request_headers}
+        .merge(authorization_options)
   end
 
 end
