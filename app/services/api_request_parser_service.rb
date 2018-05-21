@@ -8,7 +8,11 @@ class ApiRequestParserService
     @request_headers = parameters[:request_headers]
   end
 
-  def process_parameters
+  def process
+    {request_parameters: parse_request_params, request_headers: parse_request_headers}
+  end
+
+  def parse_request_params
     if request_parameters.present?
       parse(request_parameters)
     elsif request_body.present?
@@ -18,7 +22,7 @@ class ApiRequestParserService
     end
   end
 
-  def process_headers
+  def parse_request_headers
     if request_headers.present?
       parse(request_headers)
     else

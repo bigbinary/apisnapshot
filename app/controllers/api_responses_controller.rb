@@ -8,7 +8,9 @@ class ApiResponsesController < ApplicationController
   end
 
   def create
-    request_service = RequestService.new(params[:url], params[:method], options)
+    request_service = RequestService.new(url: api_request_params[:url],
+                                         method: api_request_params[:method],
+                                         options: options_for_request_service)
     request_service.process
 
     if request_service.errors.present?
@@ -44,14 +46,12 @@ class ApiResponsesController < ApplicationController
     }
   end
 
-  def options
-    api_request_parser_service = ApiRequestParserService.new(api_request_params)
-    request_headers = api_request_parser_service.process_headers
-    request_parameters = api_request_parser_service.process_parameters
-    params.merge(request_params: request_parameters).merge(request_headers: request_headers).permit!.to_h
+  def options_for_request_service
+    parsed_request_params = ApiRequestParserService.new(api_request_params).process
+    api_request_params.merge(parsed_request_params).to_h
   end
 
   def api_request_params
-    params.permit(:request_body, :request_headers, request_parameters: [:key, :value])
+    params.permit(:url, :method, :request_body, request_headers: [:key, :value], request_parameters: [:key, :value])
   end
 end
