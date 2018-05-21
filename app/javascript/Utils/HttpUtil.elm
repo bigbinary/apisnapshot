@@ -146,12 +146,12 @@ requestDecoder : JD.Decoder SRequest
 requestDecoder =
     JP.decode SRequest
         |> JP.optional "url" JD.string ""
-        |> JP.optional "httpMethod" httpMethodDecoder HttpMethods.Get
-        |> JP.optional "requestParams" requestParametersDecoder RequestParameters.empty
-        |> JP.optional "requestHeaders" requestHeadersDecoder RequestHeaders.empty
+        |> JP.optional "method" httpMethodDecoder HttpMethods.Get
+        |> JP.optional "request_params" requestParametersDecoder RequestParameters.empty
+        |> JP.optional "request_headers" requestHeadersDecoder RequestHeaders.empty
         |> JP.optional "username" (JD.map Just JD.string) Nothing
         |> JP.optional "password" (JD.map Just JD.string) Nothing
-        |> JP.optional "requestBody"
+        |> JP.optional "request_body"
             (JD.map Just requestBodyDecoder)
             Nothing
 
@@ -260,7 +260,7 @@ decodeCreatedAtFromResponse : Response -> Maybe String
 decodeCreatedAtFromResponse response =
     let
         decoder =
-            JD.field "createdAt" JD.string
+            JD.field "created_at" JD.string
 
         result =
             JD.decodeString decoder response.body
