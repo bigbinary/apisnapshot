@@ -45,9 +45,13 @@ class ApiResponsesController < ApplicationController
   end
 
   def options
-    api_request_parser_service = ApiRequestParserService.new(params)
+    api_request_parser_service = ApiRequestParserService.new(api_request_params)
     request_headers = api_request_parser_service.process_headers
     request_parameters = api_request_parser_service.process_parameters
     params.merge(request_params: request_parameters).merge(request_headers: request_headers).permit!.to_h
+  end
+
+  def api_request_params
+    params.permit(:request_body, :request_headers, request_parameters: [:key, :value])
   end
 end
