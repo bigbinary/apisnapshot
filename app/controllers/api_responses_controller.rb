@@ -1,7 +1,6 @@
 class ApiResponsesController < ApplicationController
 
   before_action :load_api_response, only: [:show]
-  skip_before_action :verify_authenticity_token
 
   def show
     respond_to do |format|
