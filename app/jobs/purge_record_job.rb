@@ -1,6 +1,6 @@
 class PurgeRecordJob
 
-    RETAIN_RECORDS_FOR_IN_DAYS = 7
+    RETAIN_RECORDS_FOR_IN_DAYS = 30
 
     include ::ScheduledJob
 
