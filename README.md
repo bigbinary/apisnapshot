@@ -6,7 +6,7 @@ The URL and the data it shows can't be changed.
 
 If you submit another request then you will get another URL. 
 
-Please note that records are deleted after 7 days.
+Please note that records are deleted after 30 days.
 
 ## Technology Stack
 
