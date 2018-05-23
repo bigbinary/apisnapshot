@@ -1631,6 +1631,10 @@ crypto-browserify@^3.11.0:
     randombytes "^2.0.0"
     randomfill "^1.0.3"
 
+csrf-xhr@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/csrf-xhr/-/csrf-xhr-1.0.0.tgz#d554e12a75c2460dfe6355c22254f35df0ebac34"
+
 css-color-function@~1.3.3:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/css-color-function/-/css-color-function-1.3.3.tgz#8ed24c2c0205073339fafa004bc8c141fccb282e"

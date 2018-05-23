@@ -4,6 +4,7 @@
 
 import 'bootstrap'
 import './application.css'
+import 'csrf-xhr'
 import Elm from '../Main'
 
 document.addEventListener('DOMContentLoaded', () => {
